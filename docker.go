@@ -45,8 +45,6 @@ type DockerContainer struct {
 	WaitingFor wait.Strategy
 	Image      string
 
-	// Cache to retrieve container information without re-fetching them from dockerd
-	raw               *types.ContainerJSON
 	provider          *DockerProvider
 	sessionID         uuid.UUID
 	terminationSignal chan bool
@@ -130,6 +128,9 @@ func (c *DockerContainer) MappedPort(ctx context.Context, port nat.Port) (nat.Po
 		if port.Proto() != "" && k.Proto() != port.Proto() {
 			continue
 		}
+		if len(p) == 0 {
+			continue
+		}
 		return nat.NewPort(k.Proto(), p[0].HostPort)
 	}
 
@@ -180,23 +181,18 @@ func (c *DockerContainer) Terminate(ctx context.Context) error {
 
 	if err == nil {
 		c.sessionID = uuid.UUID{}
-		c.raw = nil
 	}
 
 	return err
 }
 
 func (c *DockerContainer) inspectContainer(ctx context.Context) (*types.ContainerJSON, error) {
-	if c.raw != nil {
-		return c.raw, nil
-	}
 	inspect, err := c.provider.client.ContainerInspect(ctx, c.ID)
 	if err != nil {
 		return nil, err
 	}
-	c.raw = &inspect
 
-	return c.raw, nil
+	return &inspect, nil
 }
 
 // Logs will fetch both STDOUT and STDERR from the current container. Returns a
@@ -645,7 +641,7 @@ func (p *DockerProvider) CreateContainer(ctx context.Context, req ContainerReque
 		EndpointsConfig: endpointConfigs,
 	}
 
-	resp, err := p.client.ContainerCreate(ctx, dockerInput, hostConfig, &networkingConfig, req.Name)
+	resp, err := p.client.ContainerCreate(ctx, dockerInput, hostConfig, &networkingConfig, nil, req.Name)
 	if err != nil {
 		return nil, err
 	}
@@ -710,7 +706,7 @@ func (p *DockerProvider) attemptToPullImage(ctx context.Context, tag string, pul
 	return err
 }
 
-// Helth measure the healthiness of the provider. Right now we leverage the
+// Health measure the healthiness of the provider. Right now we leverage the
 // docker-client ping endpoint to see if the daemon is reachable.
 func (p *DockerProvider) Health(ctx context.Context) (err error) {
 	_, err = p.client.Ping(ctx)
