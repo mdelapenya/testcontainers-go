@@ -119,7 +119,6 @@ func Test_MultipleContainersInTheNewNetwork(t *testing.T) {
 	dbContainerRequest := ContainerRequest{
 		Image:        "postgres:12",
 		ExposedPorts: []string{"5432/tcp"},
-		AutoRemove:   true,
 		Env:          env,
 		WaitingFor:   wait.ForListeningPort("5432/tcp"),
 		Networks:     []string{networkName},
@@ -140,7 +139,7 @@ func Test_MultipleContainersInTheNewNetwork(t *testing.T) {
 	postgres, err := GenericContainer(ctx, GenericContainerRequest{
 		ContainerRequest: dbContainerRequest,
 		Started:          true,
-	})
+	}, WithAutoRemove())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -157,14 +156,13 @@ func Test_MultipleContainersInTheNewNetwork(t *testing.T) {
 		Image:        "rabbitmq:3.8.19-management-alpine",
 		ExposedPorts: []string{"15672/tcp", "5672/tcp"},
 		Env:          env,
-		AutoRemove:   true,
 		WaitingFor:   hp,
 		Networks:     []string{networkName},
 	}
 	rabbitmq, err := GenericContainer(ctx, GenericContainerRequest{
 		ContainerRequest: amqpRequest,
 		Started:          true,
-	})
+	}, WithAutoRemove())
 	if err != nil {
 		t.Fatal(err)
 		return

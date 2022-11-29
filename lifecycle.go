@@ -8,7 +8,7 @@ import (
 	"github.com/docker/go-connections/nat"
 )
 
-func (p *DockerProvider) preCreateContainerHook(ctx context.Context, req ContainerRequest, dockerInput *container.Config, hostConfig *container.HostConfig, networkingConfig *network.NetworkingConfig) error {
+func (p *DockerProvider) preCreateContainerHook(ctx context.Context, req ContainerRequest, dockerInput *container.Config, hostConfig *container.HostConfig, networkingConfig *network.NetworkingConfig, opts ...ContainerConfigOption) error {
 	// prepare mounts
 	hostConfig.Mounts = mapToDockerMounts(req.Mounts)
 
@@ -32,10 +32,12 @@ func (p *DockerProvider) preCreateContainerHook(ctx context.Context, req Contain
 		}
 	}
 
-	if req.PreCreateModifier == nil {
-		req.PreCreateModifier = defaultPreCreateModifier(req)
+	if len(opts) == 0 {
+		opts = WithDefaultOptions(req)
 	}
-	req.PreCreateModifier(hostConfig, endpointSettings)
+	for _, opt := range opts {
+		opt(hostConfig, networkingConfig)
+	}
 
 	networkingConfig.EndpointsConfig = endpointSettings
 
@@ -60,17 +62,4 @@ func (p *DockerProvider) preCreateContainerHook(ctx context.Context, req Contain
 	hostConfig.PortBindings = exposedPortMap
 
 	return nil
-}
-
-// defaultPreCreateModifier provides a default modifier including the deprecated fields
-func defaultPreCreateModifier(req ContainerRequest) func(hostConfig *container.HostConfig, endpointSettings map[string]*network.EndpointSettings) {
-	return func(hostConfig *container.HostConfig, endpointSettings map[string]*network.EndpointSettings) {
-		hostConfig.AutoRemove = req.AutoRemove
-		hostConfig.CapAdd = req.CapAdd
-		hostConfig.CapDrop = req.CapDrop
-		hostConfig.Binds = req.Binds
-		hostConfig.ExtraHosts = req.ExtraHosts
-		hostConfig.NetworkMode = req.NetworkMode
-		hostConfig.Resources = req.Resources
-	}
 }

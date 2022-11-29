@@ -9,7 +9,6 @@ import (
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
-	"github.com/docker/docker/api/types/network"
 	"github.com/docker/docker/pkg/archive"
 	"github.com/docker/go-connections/nat"
 
@@ -28,9 +27,9 @@ type DeprecatedContainer interface {
 
 // ContainerProvider allows the creation of containers on an arbitrary system
 type ContainerProvider interface {
-	CreateContainer(context.Context, ContainerRequest) (Container, error)        // create a container without starting it
-	ReuseOrCreateContainer(context.Context, ContainerRequest) (Container, error) // reuses a container if it exists or creates a container without starting
-	RunContainer(context.Context, ContainerRequest) (Container, error)           // create a container and start it
+	CreateContainer(context.Context, ContainerRequest, ...ContainerConfigOption) (Container, error)        // create a container without starting it
+	ReuseOrCreateContainer(context.Context, ContainerRequest, ...ContainerConfigOption) (Container, error) // reuses a container if it exists or creates a container without starting
+	RunContainer(context.Context, ContainerRequest, ...ContainerConfigOption) (Container, error)           // create a container and start it
 	Health(context.Context) error
 	Config() TestContainersConfig
 }
@@ -95,36 +94,35 @@ type ContainerFile struct {
 // ContainerRequest represents the parameters used to get a running container
 type ContainerRequest struct {
 	FromDockerfile
-	Image             string
-	Entrypoint        []string
-	Env               map[string]string
-	ExposedPorts      []string // allow specifying protocol info
-	Cmd               []string
-	Labels            map[string]string
-	Mounts            ContainerMounts
-	Tmpfs             map[string]string
-	RegistryCred      string
-	WaitingFor        wait.Strategy
-	Name              string // for specifying container name
-	Hostname          string
-	ExtraHosts        []string                                                          // Deprecated: Use PreCreateModifier instead
-	Privileged        bool                                                              // For starting privileged container
-	Networks          []string                                                          // for specifying network names
-	NetworkAliases    map[string][]string                                               // for specifying network aliases
-	NetworkMode       container.NetworkMode                                             // Deprecated: Use PreCreateModifier instead
-	Resources         container.Resources                                               // Deprecated: Use PreCreateModifier instead
-	Files             []ContainerFile                                                   // files which will be copied when container starts
-	User              string                                                            // for specifying uid:gid
-	SkipReaper        bool                                                              // indicates whether we skip setting up a reaper for this
-	ReaperImage       string                                                            // alternative reaper image
-	AutoRemove        bool                                                              // Deprecated: Use PreCreateModifier instead. If set to true, the container will be removed from the host when stopped
-	AlwaysPullImage   bool                                                              // Always pull image
-	ImagePlatform     string                                                            // ImagePlatform describes the platform which the image runs on.
-	Binds             []string                                                          // Deprecated: Use PreCreateModifier instead
-	ShmSize           int64                                                             // Amount of memory shared with the host (in bytes)
-	CapAdd            []string                                                          // Deprecated: Use PreCreateModifier instead. Add Linux capabilities
-	CapDrop           []string                                                          // Deprecated: Use PreCreateModifier instead. Drop Linux capabilities
-	PreCreateModifier func(*container.HostConfig, map[string]*network.EndpointSettings) // Modifier for the host config and network settings before container creation
+	Image           string
+	Entrypoint      []string
+	Env             map[string]string
+	ExposedPorts    []string // allow specifying protocol info
+	Cmd             []string
+	Labels          map[string]string
+	Mounts          ContainerMounts
+	Tmpfs           map[string]string
+	RegistryCred    string
+	WaitingFor      wait.Strategy
+	Name            string // for specifying container name
+	Hostname        string
+	ExtraHosts      []string              // Deprecated: Use WithExtraHost functional option instead
+	Privileged      bool                  // For starting privileged container
+	Networks        []string              // for specifying network names
+	NetworkAliases  map[string][]string   // for specifying network aliases
+	NetworkMode     container.NetworkMode // Deprecated: Use WithNetworkMode functional option instead
+	Resources       container.Resources   // Deprecated: Use WithResources functional option instead
+	Files           []ContainerFile       // files which will be copied when container starts
+	User            string                // for specifying uid:gid
+	SkipReaper      bool                  // indicates whether we skip setting up a reaper for this
+	ReaperImage     string                // alternative reaper image
+	AutoRemove      bool                  // Deprecated: Use WithLegacyAutoRemove functional option instead. If set to true, the container will be removed from the host when stopped
+	AlwaysPullImage bool                  // Always pull image
+	ImagePlatform   string                // ImagePlatform describes the platform which the image runs on.
+	Binds           []string              // Deprecated: Use WithBinds functional option instead
+	ShmSize         int64                 // Amount of memory shared with the host (in bytes)
+	CapAdd          []string              // Deprecated: Use WithCapAdd functional option instead. Add Linux capabilities
+	CapDrop         []string              // Deprecated: Use WithCapDrop functional option instead. Drop Linux capabilities
 }
 
 type (

@@ -920,7 +920,7 @@ func (p *DockerProvider) BuildImage(ctx context.Context, img ImageBuildInfo) (st
 }
 
 // CreateContainer fulfills a request for a container without starting it
-func (p *DockerProvider) CreateContainer(ctx context.Context, req ContainerRequest) (Container, error) {
+func (p *DockerProvider) CreateContainer(ctx context.Context, req ContainerRequest, opts ...ContainerConfigOption) (Container, error) {
 	var err error
 
 	// Make sure that bridge network exists
@@ -1055,7 +1055,7 @@ func (p *DockerProvider) CreateContainer(ctx context.Context, req ContainerReque
 
 	networkingConfig := &network.NetworkingConfig{}
 
-	err = p.preCreateContainerHook(ctx, req, dockerInput, hostConfig, networkingConfig)
+	err = p.preCreateContainerHook(ctx, req, dockerInput, hostConfig, networkingConfig, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1123,13 +1123,13 @@ func (p *DockerProvider) findContainerByName(ctx context.Context, name string) (
 	return nil, nil
 }
 
-func (p *DockerProvider) ReuseOrCreateContainer(ctx context.Context, req ContainerRequest) (Container, error) {
+func (p *DockerProvider) ReuseOrCreateContainer(ctx context.Context, req ContainerRequest, opts ...ContainerConfigOption) (Container, error) {
 	c, err := p.findContainerByName(ctx, req.Name)
 	if err != nil {
 		return nil, err
 	}
 	if c == nil {
-		return p.CreateContainer(ctx, req)
+		return p.CreateContainer(ctx, req, opts...)
 	}
 
 	sessionID := sessionID()
@@ -1198,8 +1198,8 @@ func (p *DockerProvider) Health(ctx context.Context) (err error) {
 }
 
 // RunContainer takes a RequestContainer as input and it runs a container via the docker sdk
-func (p *DockerProvider) RunContainer(ctx context.Context, req ContainerRequest) (Container, error) {
-	c, err := p.CreateContainer(ctx, req)
+func (p *DockerProvider) RunContainer(ctx context.Context, req ContainerRequest, opts ...ContainerConfigOption) (Container, error) {
+	c, err := p.CreateContainer(ctx, req, opts...)
 	if err != nil {
 		return nil, err
 	}

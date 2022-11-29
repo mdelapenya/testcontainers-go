@@ -42,7 +42,7 @@ func GenericNetwork(ctx context.Context, req GenericNetworkRequest) (Network, er
 }
 
 // GenericContainer creates a generic container with parameters
-func GenericContainer(ctx context.Context, req GenericContainerRequest) (Container, error) {
+func GenericContainer(ctx context.Context, req GenericContainerRequest, opts ...ContainerConfigOption) (Container, error) {
 	if req.Reuse && req.Name == "" {
 		return nil, ErrReuseEmptyName
 	}
@@ -63,9 +63,9 @@ func GenericContainer(ctx context.Context, req GenericContainerRequest) (Contain
 		reuseContainerMx.Lock()
 		defer reuseContainerMx.Unlock()
 
-		c, err = provider.ReuseOrCreateContainer(ctx, req.ContainerRequest)
+		c, err = provider.ReuseOrCreateContainer(ctx, req.ContainerRequest, opts...)
 	} else {
-		c, err = provider.CreateContainer(ctx, req.ContainerRequest)
+		c, err = provider.CreateContainer(ctx, req.ContainerRequest, opts...)
 	}
 	if err != nil {
 		return nil, fmt.Errorf("%w: failed to create container", err)

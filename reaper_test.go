@@ -13,24 +13,26 @@ import (
 )
 
 type mockReaperProvider struct {
-	req             ContainerRequest
-	hostConfig      *container.HostConfig
-	enpointSettings map[string]*network.EndpointSettings
-	config          TestContainersConfig
+	req              ContainerRequest
+	hostConfig       *container.HostConfig
+	networkingConfig *network.NetworkingConfig
+	config           TestContainersConfig
 }
 
 var errExpected = errors.New("expected")
 
-func (m *mockReaperProvider) RunContainer(ctx context.Context, req ContainerRequest) (Container, error) {
+func (m *mockReaperProvider) RunContainer(ctx context.Context, req ContainerRequest, opts ...ContainerConfigOption) (Container, error) {
 	m.req = req
 
 	m.hostConfig = &container.HostConfig{}
-	m.enpointSettings = map[string]*network.EndpointSettings{}
+	m.networkingConfig = &network.NetworkingConfig{}
 
-	if req.PreCreateModifier == nil {
-		req.PreCreateModifier = defaultPreCreateModifier(req)
+	if len(opts) == 0 {
+		opts = WithDefaultOptions(req)
 	}
-	req.PreCreateModifier(m.hostConfig, m.enpointSettings)
+	for _, opt := range opts {
+		opt(m.hostConfig, m.networkingConfig)
+	}
 
 	// we're only interested in the request, so instead of mocking the Docker client
 	// we'll error out here

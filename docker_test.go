@@ -21,7 +21,6 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 
 	"github.com/docker/docker/api/types/container"
-	"github.com/docker/docker/api/types/network"
 	"github.com/docker/docker/api/types/strslice"
 	"github.com/docker/go-units"
 	"github.com/go-redis/redis/v8"
@@ -154,14 +153,11 @@ func TestContainerWithHostNetworkOptions(t *testing.T) {
 			},
 			Privileged: true,
 			WaitingFor: wait.ForListeningPort(nginxHighPort),
-			PreCreateModifier: func(hc *container.HostConfig, es map[string]*network.EndpointSettings) {
-				hc.NetworkMode = "host"
-			},
 		},
 		Started: true,
 	}
 
-	nginxC, err := GenericContainer(ctx, gcr)
+	nginxC, err := GenericContainer(ctx, gcr, WithNetworkMode("host"))
 	require.NoError(t, err)
 	terminateContainerOnEnd(t, ctx, nginxC)
 
@@ -219,14 +215,11 @@ func TestContainerWithNetworkModeAndNetworkTogether(t *testing.T) {
 			Image:      nginxImage,
 			SkipReaper: true,
 			Networks:   []string{"new-network"},
-			PreCreateModifier: func(hc *container.HostConfig, es map[string]*network.EndpointSettings) {
-				hc.NetworkMode = "host"
-			},
 		},
 		Started: true,
 	}
 
-	nginx, err := GenericContainer(ctx, gcr)
+	nginx, err := GenericContainer(ctx, gcr, WithNetworkMode("host"))
 	if err != nil {
 		// Error when NetworkMode = host and Network = []string{"bridge"}
 		t.Logf("Can't use Network and NetworkMode together, %s", err)
@@ -249,14 +242,11 @@ func TestContainerWithHostNetworkOptionsAndWaitStrategy(t *testing.T) {
 			SkipReaper: true,
 			WaitingFor: wait.ForListeningPort(nginxHighPort),
 			Mounts:     Mounts(BindMount(absPath, "/etc/nginx/conf.d/default.conf")),
-			PreCreateModifier: func(hc *container.HostConfig, es map[string]*network.EndpointSettings) {
-				hc.NetworkMode = "host"
-			},
 		},
 		Started: true,
 	}
 
-	nginxC, err := GenericContainer(ctx, gcr)
+	nginxC, err := GenericContainer(ctx, gcr, WithNetworkMode("host"))
 
 	require.NoError(t, err)
 	terminateContainerOnEnd(t, ctx, nginxC)
@@ -287,14 +277,11 @@ func TestContainerWithHostNetworkAndEndpoint(t *testing.T) {
 			SkipReaper: true,
 			WaitingFor: wait.ForListeningPort(nginxHighPort),
 			Mounts:     Mounts(BindMount(absPath, "/etc/nginx/conf.d/default.conf")),
-			PreCreateModifier: func(hc *container.HostConfig, es map[string]*network.EndpointSettings) {
-				hc.NetworkMode = "host"
-			},
 		},
 		Started: true,
 	}
 
-	nginxC, err := GenericContainer(ctx, gcr)
+	nginxC, err := GenericContainer(ctx, gcr, WithNetworkMode("host"))
 
 	require.NoError(t, err)
 	terminateContainerOnEnd(t, ctx, nginxC)
@@ -326,14 +313,11 @@ func TestContainerWithHostNetworkAndPortEndpoint(t *testing.T) {
 			SkipReaper: true,
 			WaitingFor: wait.ForListeningPort(nginxHighPort),
 			Mounts:     Mounts(BindMount(absPath, "/etc/nginx/conf.d/default.conf")),
-			PreCreateModifier: func(hc *container.HostConfig, es map[string]*network.EndpointSettings) {
-				hc.NetworkMode = "host"
-			},
 		},
 		Started: true,
 	}
 
-	nginxC, err := GenericContainer(ctx, gcr)
+	nginxC, err := GenericContainer(ctx, gcr, WithNetworkMode("host"))
 
 	require.NoError(t, err)
 	terminateContainerOnEnd(t, ctx, nginxC)
@@ -2417,14 +2401,9 @@ func TestDockerContainerResources(t *testing.T) {
 			Image:        nginxAlpineImage,
 			ExposedPorts: []string{nginxDefaultPort},
 			WaitingFor:   wait.ForListeningPort(nginxDefaultPort),
-			PreCreateModifier: func(hc *container.HostConfig, es map[string]*network.EndpointSettings) {
-				hc.Resources = container.Resources{
-					Ulimits: expected,
-				}
-			},
 		},
 		Started: true,
-	})
+	}, WithResources(container.Resources{Ulimits: expected}))
 
 	require.NoError(t, err)
 	terminateContainerOnEnd(t, ctx, nginxC)
@@ -2505,12 +2484,9 @@ func TestContainerCapAdd(t *testing.T) {
 			Image:        nginxAlpineImage,
 			ExposedPorts: []string{nginxDefaultPort},
 			WaitingFor:   wait.ForListeningPort(nginxDefaultPort),
-			PreCreateModifier: func(hc *container.HostConfig, es map[string]*network.EndpointSettings) {
-				hc.CapAdd = []string{expected}
-			},
 		},
 		Started: true,
-	})
+	}, WithCapAdd([]string{expected}))
 	require.NoError(t, err)
 	terminateContainerOnEnd(t, ctx, nginx)
 
@@ -2652,12 +2628,9 @@ func TestNetworkModeWithContainerReference(t *testing.T) {
 		ProviderType: providerType,
 		ContainerRequest: ContainerRequest{
 			Image: nginxAlpineImage,
-			PreCreateModifier: func(hc *container.HostConfig, es map[string]*network.EndpointSettings) {
-				hc.NetworkMode = container.NetworkMode(networkMode)
-			},
 		},
 		Started: true,
-	})
+	}, WithNetworkMode(container.NetworkMode(networkMode)))
 
 	require.NoError(t, err)
 	terminateContainerOnEnd(t, ctx, nginxB)

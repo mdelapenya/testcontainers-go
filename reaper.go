@@ -11,8 +11,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/docker/docker/api/types/container"
-	"github.com/docker/docker/api/types/network"
 	"github.com/docker/go-connections/nat"
 
 	"github.com/testcontainers/testcontainers-go/wait"
@@ -37,7 +35,7 @@ var (
 // ReaperProvider represents a provider for the reaper to run itself with
 // The ContainerProvider interface should usually satisfy this as well, so it is pluggable
 type ReaperProvider interface {
-	RunContainer(ctx context.Context, req ContainerRequest) (Container, error)
+	RunContainer(ctx context.Context, req ContainerRequest, opts ...ContainerConfigOption) (Container, error)
 	Config() TestContainersConfig
 }
 
@@ -72,10 +70,6 @@ func NewReaper(ctx context.Context, sessionID string, provider ReaperProvider, r
 		Mounts:     Mounts(BindMount(dockerHost, "/var/run/docker.sock")),
 		Privileged: tcConfig.RyukPrivileged,
 		WaitingFor: wait.ForListeningPort(listeningPort),
-		PreCreateModifier: func(hc *container.HostConfig, es map[string]*network.EndpointSettings) {
-			hc.AutoRemove = true
-			hc.NetworkMode = Bridge
-		},
 	}
 
 	// include reaper-specific labels to the reaper container
@@ -88,7 +82,7 @@ func NewReaper(ctx context.Context, sessionID string, provider ReaperProvider, r
 		req.Networks = append(req.Networks, p.DefaultNetwork)
 	}
 
-	c, err := provider.RunContainer(ctx, req)
+	c, err := provider.RunContainer(ctx, req, WithAutoRemove(), WithNetworkMode(Bridge))
 	if err != nil {
 		return nil, err
 	}
