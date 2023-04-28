@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"os"
 	"strings"
+
+	"github.com/testcontainers/testcontainers-go/internal/config"
 )
 
 // possible provider types
@@ -141,13 +143,15 @@ func NewDockerProvider(provOpts ...DockerProviderOption) (*DockerProvider, error
 		return nil, err
 	}
 
-	tcConfig := ReadConfig()
+	cfg := config.Read()
 
 	p := &DockerProvider{
 		DockerProviderOptions: o,
-		host:                  tcConfig.Host,
+		host:                  cfg.Host,
 		client:                c,
-		config:                tcConfig,
+		config: TestcontainersConfig{
+			Config: cfg,
+		},
 	}
 
 	// log docker server info only once

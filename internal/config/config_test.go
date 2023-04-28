@@ -26,7 +26,7 @@ func resetTestEnv(t *testing.T) {
 func TestReadConfig(t *testing.T) {
 	resetTestEnv(t)
 
-	t.Run("Config is always read", func(t *testing.T) {
+	t.Run("Config is read just once", func(t *testing.T) {
 		t.Setenv("HOME", "")
 		t.Setenv("TESTCONTAINERS_RYUK_DISABLED", "true")
 
@@ -41,11 +41,6 @@ func TestReadConfig(t *testing.T) {
 
 		t.Setenv("TESTCONTAINERS_RYUK_DISABLED", "false")
 
-		expected = Config{
-			RyukDisabled: false,
-			Host:         dockerSock,
-		}
-
 		config = Read()
 		assert.Equal(t, expected, config)
 	})
@@ -57,7 +52,7 @@ func TestReadTCConfig(t *testing.T) {
 	t.Run("HOME is not set", func(t *testing.T) {
 		t.Setenv("HOME", "")
 
-		config := Read()
+		config := read()
 
 		expected := Config{}
 		expected.Host = dockerSock
@@ -70,7 +65,7 @@ func TestReadTCConfig(t *testing.T) {
 		t.Setenv("TESTCONTAINERS_RYUK_DISABLED", "true")
 		t.Setenv("TESTCONTAINERS_RYUK_CONTAINER_PRIVILEGED", "true")
 
-		config := Read()
+		config := read()
 
 		expected := Config{}
 		expected.RyukDisabled = true
@@ -84,7 +79,7 @@ func TestReadTCConfig(t *testing.T) {
 		tmpDir := t.TempDir()
 		t.Setenv("HOME", tmpDir)
 
-		config := Read()
+		config := read()
 
 		expected := Config{}
 		expected.Host = dockerSock
@@ -97,7 +92,7 @@ func TestReadTCConfig(t *testing.T) {
 		t.Setenv("HOME", tmpDir)
 		t.Setenv("DOCKER_HOST", tcpDockerHost33293)
 
-		config := Read()
+		config := read()
 		expected := Config{}
 		expected.Host = tcpDockerHost33293
 
@@ -110,7 +105,7 @@ func TestReadTCConfig(t *testing.T) {
 		t.Setenv("TESTCONTAINERS_RYUK_DISABLED", "true")
 		t.Setenv("TESTCONTAINERS_RYUK_CONTAINER_PRIVILEGED", "true")
 
-		config := Read()
+		config := read()
 		expected := Config{}
 		expected.RyukDisabled = true
 		expected.RyukPrivileged = true
@@ -424,7 +419,7 @@ func TestReadTCConfig(t *testing.T) {
 					return
 				}
 
-				config := Read()
+				config := read()
 
 				assert.Equal(t, tt.expected, config, "Configuration doesn't not match")
 			})

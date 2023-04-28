@@ -5,9 +5,13 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"sync"
 
 	"github.com/magiconair/properties"
 )
+
+var tcConfig Config
+var tcConfigOnce *sync.Once = new(sync.Once)
 
 // Config represents the configuration for Testcontainers
 // testcontainersConfig {
@@ -24,6 +28,24 @@ type Config struct {
 // Read reads from testcontainers properties file, if it exists
 // it is possible that certain values get overridden when set as environment variables
 func Read() Config {
+	tcConfigOnce.Do(func() {
+		tcConfig = read()
+
+		if tcConfig.RyukDisabled {
+			ryukDisabledMessage := `
+**********************************************************************************************
+Ryuk has been disabled for the current execution. This can cause unexpected behavior in your environment.
+More on this: https://golang.testcontainers.org/features/garbage_collector/
+**********************************************************************************************`
+			fmt.Println(ryukDisabledMessage)
+			fmt.Printf("\n%+v", tcConfig)
+		}
+	})
+
+	return tcConfig
+}
+
+func read() Config {
 	config := Config{}
 
 	applyEnvironmentConfiguration := func(config Config) Config {
