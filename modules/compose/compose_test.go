@@ -9,6 +9,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/cenkalti/backoff/v4"
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/filters"
 	"github.com/google/uuid"
@@ -445,7 +446,7 @@ func TestLocalDockerComposeWithVolume(t *testing.T) {
 }
 
 func assertVolumeDoesNotExist(tb testing.TB, volumeName string) {
-	containerClient, err := testcontainers.NewDockerClient()
+	containerClient, err := makeClient(nil)
 	if err != nil {
 		tb.Fatalf("Failed to get provider: %v", err)
 	}
@@ -470,12 +471,25 @@ func assertContainerEnvironmentVariables(
 	present map[string]string,
 	absent map[string]string,
 ) {
-	containerClient, err := testcontainers.NewDockerClient()
+	containerClient, err := makeClient(nil)
 	if err != nil {
 		tb.Fatalf("Failed to get provider: %v", err)
 	}
 
-	containers, err := containerClient.ContainerList(context.Background(), types.ContainerListOptions{})
+	var containers []types.Container
+	// backoff waiting for the Docker host to response on time
+	err = backoff.Retry(func() error {
+		c, err := containerClient.ContainerList(context.Background(), types.ContainerListOptions{})
+		if err != nil {
+			return err
+		}
+		if len(c) == 0 {
+			return fmt.Errorf("container list empty")
+		}
+		containers = c
+		return nil
+	}, backoff.WithMaxRetries(backoff.NewConstantBackOff(time.Second), 5))
+
 	if err != nil {
 		tb.Fatalf("Failed to list containers: %v", err)
 	} else if len(containers) == 0 {
