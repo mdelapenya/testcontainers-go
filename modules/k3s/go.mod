@@ -9,7 +9,7 @@ require (
 	github.com/testcontainers/testcontainers-go v0.21.0
 	gopkg.in/yaml.v3 v3.0.1
 	gotest.tools/gotestsum v1.10.0
-	k8s.io/apimachinery v0.27.2
+	k8s.io/apimachinery v0.27.3
 	k8s.io/client-go v0.27.2
 )
 
