@@ -19,14 +19,14 @@ replace (
 )
 
 require (
-	github.com/compose-spec/compose-go v1.13.4
+	github.com/compose-spec/compose-go v1.15.1
 	github.com/docker/cli v23.0.5+incompatible
 	github.com/docker/compose/v2 v2.17.3
 	github.com/docker/docker v23.0.5+incompatible
 	github.com/google/uuid v1.3.0
 	github.com/stretchr/testify v1.8.4
 	github.com/testcontainers/testcontainers-go v0.21.0
-	golang.org/x/sync v0.2.0
+	golang.org/x/sync v0.3.0
 	gopkg.in/yaml.v3 v3.0.1
 	gotest.tools/gotestsum v1.10.0
 )
@@ -88,7 +88,7 @@ require (
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
 	github.com/hashicorp/go-version v1.6.0 // indirect
-	github.com/imdario/mergo v0.3.15 // indirect
+	github.com/imdario/mergo v0.3.16 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/jonboulle/clockwork v0.4.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
