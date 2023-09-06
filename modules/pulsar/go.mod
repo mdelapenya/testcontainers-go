@@ -3,8 +3,8 @@ module github.com/testcontainers/testcontainers-go/modules/pulsar
 go 1.20
 
 require (
-	github.com/apache/pulsar-client-go v0.10.0
-	github.com/docker/docker v24.0.5+incompatible
+	github.com/apache/pulsar-client-go v0.11.0
+	github.com/docker/docker v24.0.6+incompatible
 	github.com/docker/go-connections v0.4.0
 	github.com/stretchr/testify v1.8.4
 	github.com/testcontainers/testcontainers-go v0.23.0
