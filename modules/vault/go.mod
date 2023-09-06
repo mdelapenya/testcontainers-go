@@ -3,11 +3,11 @@ module github.com/testcontainers/testcontainers-go/modules/vault
 go 1.20
 
 require (
-	github.com/docker/docker v24.0.5+incompatible
-	github.com/hashicorp/vault-client-go v0.2.0
+	github.com/docker/docker v24.0.6+incompatible
+	github.com/hashicorp/vault-client-go v0.3.3
 	github.com/stretchr/testify v1.8.4
 	github.com/testcontainers/testcontainers-go v0.23.0
-	github.com/tidwall/gjson v1.15.0
+	github.com/tidwall/gjson v1.16.0
 )
 
 require (
