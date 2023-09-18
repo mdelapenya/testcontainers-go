@@ -3,7 +3,7 @@ module github.com/testcontainers/testcontainers-go/modules/kafka
 go 1.20
 
 require (
-	github.com/IBM/sarama v1.41.1
+	github.com/IBM/sarama v1.41.2
 	github.com/docker/go-connections v0.4.0
 	github.com/testcontainers/testcontainers-go v0.23.0
 	golang.org/x/mod v0.12.0
@@ -49,10 +49,10 @@ require (
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/rcrowley/go-metrics v0.0.0-20201227073835-cf1acfcdf475 // indirect
 	github.com/sirupsen/logrus v1.9.0 // indirect
-	golang.org/x/crypto v0.12.0 // indirect
+	golang.org/x/crypto v0.13.0 // indirect
 	golang.org/x/exp v0.0.0-20230510235704-dd950f8aeaea // indirect
-	golang.org/x/net v0.14.0 // indirect
-	golang.org/x/sys v0.11.0 // indirect
+	golang.org/x/net v0.15.0 // indirect
+	golang.org/x/sys v0.12.0 // indirect
 	golang.org/x/tools v0.7.0 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20230525234030-28d5490b6b19 // indirect
 	google.golang.org/grpc v1.57.0 // indirect
