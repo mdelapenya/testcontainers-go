@@ -25,7 +25,7 @@ func ExampleRunContainer() {
 		panic(err)
 	}
 
-	// Clean up the container after
+	// Clean up the container
 	defer func() {
 		if err := daprContainer.Terminate(ctx); err != nil {
 			panic(err)
