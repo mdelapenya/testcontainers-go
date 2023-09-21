@@ -12,7 +12,10 @@ func ExampleRunContainer() {
 	// runDaprContainer {
 	ctx := context.Background()
 
-	daprContainer, err := dapr.RunContainer(ctx, testcontainers.WithImage("daprio/daprd:1.11.3"))
+	daprContainer, err := dapr.RunContainer(ctx,
+		testcontainers.WithImage("daprio/daprd:1.11.3"),
+		dapr.WithAppName("dapr-app"),
+	)
 	if err != nil {
 		panic(err)
 	}
