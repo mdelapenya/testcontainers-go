@@ -17,6 +17,16 @@ type DaprContainer struct {
 	Settings options
 }
 
+// GRPCPort returns the port used by the Dapr container
+func (c *DaprContainer) GRPCPort(ctx context.Context) (int, error) {
+	port, err := c.MappedPort(ctx, nat.Port(defaultDaprPort))
+	if err != nil {
+		return 0, err
+	}
+
+	return port.Int(), nil
+}
+
 // RunContainer creates an instance of the Dapr container type
 func RunContainer(ctx context.Context, opts ...testcontainers.ContainerCustomizer) (*DaprContainer, error) {
 	req := testcontainers.ContainerRequest{

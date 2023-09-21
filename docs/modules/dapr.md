@@ -45,3 +45,7 @@ for Dapr. E.g. `testcontainers.WithImage("daprio/daprd:1.11.3")`.
 ### Container Methods
 
 The Dapr container exposes the following methods:
+
+#### GRPCPort
+
+This method returns the integer representation of the exposed port for the Dapr gRPC API, which internally is `50001`, and an error if something went wrong while retrieving the port.
