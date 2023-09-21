@@ -46,6 +46,38 @@ for Dapr. E.g. `testcontainers.WithImage("daprio/daprd:1.11.3")`.
 
 It's possible to define the application name used by Dapr with the `WithAppName(name string)` functional option. If not passed, the default value is `dapr-app`.
 
+#### Components
+
+You can add components to the Dapr container with the `WithComponents(components ...Component)` functional option. If not passed, the default value is an empty map.
+
+The `Component` struct has the following fields:
+
+<!--codeinclude-->
+[Dapr Component](../../modules/dapr/options.go) inside_block:componentStruct
+<!--/codeinclude-->
+
+- The key used to internally identify a Component is a string formed by the component name and the component type, separated by a colon. E.g. `my-pubsub:pubsub`.
+- Metadata it's a map of strings, where the key is the metadata name and the value is the metadata value. It will be used to render a YAML file with the component configuration.
+
+Each component will result in a configuration file that will be uploaded to the Dapr container, under the `/components` directory. It's possible to change this file path with the `WithComponentsPath(path string)` functional option. If not passed, the default value is `/components`.
+
+The file will be named as the component name, and the content will be a YAML file with the following structure:
+
+```yaml
+apiVersion: dapr.io/v1alpha1
+  kind: Component
+  metadata:
+    name: statestore
+  spec:
+    type: state.in-memory
+    version: v1
+  metadata:
+    - name: foo1
+      value: bar1
+    - name: foo2
+      value: bar2
+```
+
 ### Container Methods
 
 The Dapr container exposes the following methods:

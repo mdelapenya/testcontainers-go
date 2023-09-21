@@ -5,12 +5,16 @@ import (
 )
 
 type options struct {
-	AppName string
+	AppName        string
+	Components     map[string]Component
+	ComponentsPath string
 }
 
 func defaultOptions() options {
 	return options{
-		AppName: defaultDaprAppName,
+		AppName:        defaultDaprAppName,
+		Components:     map[string]Component{},
+		ComponentsPath: defaultComponentsPath,
 	}
 }
 
@@ -29,5 +33,42 @@ func (o Option) Customize(*testcontainers.GenericContainerRequest) {
 func WithAppName(name string) Option {
 	return func(o *options) {
 		o.AppName = name
+	}
+}
+
+// componentStruct {
+type Component struct {
+	Name     string
+	Type     string
+	Metadata map[string]string
+}
+
+// }
+
+func (c Component) Key() string {
+	return c.Name + ":" + c.Type
+}
+
+func NewComponent(name string, t string, metadata map[string]string) Component {
+	return Component{
+		Name:     name,
+		Type:     t,
+		Metadata: metadata,
+	}
+}
+
+// WithComponents defines the components added to the dapr config, using a variadic list of Component.
+func WithComponents(component ...Component) Option {
+	return func(o *options) {
+		for _, c := range component {
+			o.Components[c.Key()] = c
+		}
+	}
+}
+
+// WithComponentsPath defines the container path where the components will be stored.
+func WithComponentsPath(path string) Option {
+	return func(o *options) {
+		o.ComponentsPath = path
 	}
 }

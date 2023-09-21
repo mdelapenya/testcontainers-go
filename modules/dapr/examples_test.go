@@ -15,6 +15,11 @@ func ExampleRunContainer() {
 	daprContainer, err := dapr.RunContainer(ctx,
 		testcontainers.WithImage("daprio/daprd:1.11.3"),
 		dapr.WithAppName("dapr-app"),
+		dapr.WithComponents(
+			dapr.NewComponent("pubsub", "pubsub.in-memory", map[string]string{"foo": "bar", "bar": "baz"}),
+			dapr.NewComponent("statestore", "statestore.in-memory", map[string]string{"baz": "qux", "quux": "quuz"}),
+		),
+		dapr.WithComponentsPath("/components"),
 	)
 	if err != nil {
 		panic(err)
