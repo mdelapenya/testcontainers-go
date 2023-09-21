@@ -38,6 +38,10 @@
             "path": "../modules/couchbase"
         },
         {
+            "name": "module / dapr",
+            "path": "../modules/dapr"
+        },
+        {
             "name": "module / elasticsearch",
             "path": "../modules/elasticsearch"
         },
