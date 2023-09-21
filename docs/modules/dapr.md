@@ -42,6 +42,10 @@ for Dapr. E.g. `testcontainers.WithImage("daprio/daprd:1.11.3")`.
 
 {% include "../features/common_functional_options.md" %}
 
+#### Application Name
+
+It's possible to define the application name used by Dapr with the `WithAppName(name string)` functional option. If not passed, the default value is `dapr-app`.
+
 ### Container Methods
 
 The Dapr container exposes the following methods:
