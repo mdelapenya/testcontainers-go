@@ -16,7 +16,7 @@ import (
 
 const (
 	// defaultComponentsPath is the path where the components are mounted in the Dapr container
-	defaultComponentsPath        = "/components"
+	defaultComponentsPath string = "/components"
 	defaultDaprPort       string = "50001/tcp"
 	defaultDaprAppName    string = "dapr-app"
 )
