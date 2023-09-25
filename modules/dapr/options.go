@@ -42,6 +42,13 @@ func WithAppName(name string) Option {
 	}
 }
 
+// WithNetworkName defines the network name in which the dapr container is attached.
+func WithNetworkName(name string) Option {
+	return func(o *options) {
+		o.NetworkName = name
+	}
+}
+
 // componentStruct {
 type Component struct {
 	Name     string

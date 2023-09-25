@@ -31,6 +31,11 @@ func RunContainer(ctx context.Context, opts ...testcontainers.ContainerCustomize
 - `context.Context`, the Go context.
 - `testcontainers.ContainerCustomizer`, a variadic argument for passing options.
 
+This entrypoint function will create:
+
+- a Dapr network in which the Dapr container and all its components will be attached. Default name is `dapr-network`.
+- a Dapr container.
+
 ### Container Options
 
 When starting the Dapr container, you can pass options in a variadic way to configure it.
@@ -45,6 +50,10 @@ for Dapr. E.g. `testcontainers.WithImage("daprio/daprd:1.11.3")`.
 #### Application Name
 
 It's possible to define the application name used by Dapr with the `WithAppName(name string)` functional option. If not passed, the default value is `dapr-app`.
+
+#### Network Name
+
+It's possible to define the network name used by Dapr with the `WithNetworkName(name string)` functional option. If not passed, the default value is `dapr-network`.
 
 #### Components
 
