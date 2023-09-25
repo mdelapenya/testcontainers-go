@@ -1,13 +1,11 @@
 package dapr
 
 import (
-	"bytes"
 	"context"
 	_ "embed"
 	"fmt"
 	"os"
 	"path/filepath"
-	"text/template"
 	"time"
 
 	"github.com/docker/go-connections/nat"
@@ -97,20 +95,9 @@ func RunContainer(ctx context.Context, opts ...testcontainers.ContainerCustomize
 // temporary directory. The entire directory is then uploaded to the container.
 func renderComponents(settings options, req *testcontainers.GenericContainerRequest) error {
 	for _, component := range settings.Components {
-		name := component.Name + ".yaml"
-		tpl, err := template.New(name).Parse(componentYamlTpl)
-		if err != nil {
-			return fmt.Errorf("failed to parse component file template: %w", err)
-		}
+		content, err := component.Render()
 
-		var componentConfig bytes.Buffer
-		if err := tpl.Execute(&componentConfig, component); err != nil {
-			return fmt.Errorf("failed to render component template: %w", err)
-		}
-
-		content := componentConfig.Bytes()
-
-		tmpComponentFile := filepath.Join(componentsTmpDir, name)
+		tmpComponentFile := filepath.Join(componentsTmpDir, component.FileName())
 		err = os.WriteFile(tmpComponentFile, content, 0o600)
 		if err != nil {
 			return err

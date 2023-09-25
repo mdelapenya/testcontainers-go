@@ -1,6 +1,10 @@
 package dapr
 
 import (
+	"bytes"
+	"fmt"
+	"text/template"
+
 	"github.com/testcontainers/testcontainers-go"
 )
 
@@ -48,6 +52,27 @@ type Component struct {
 // Key returns the component name, which must be unique.
 func (c Component) Key() string {
 	return c.Name
+}
+
+// FileName returns the component file name, which must be unique.
+func (c Component) FileName() string {
+	return c.Name + ".yaml"
+}
+
+// Render returns the component configuration as a byte slice, obtained after the interpolation
+// of the component template.
+func (c Component) Render() ([]byte, error) {
+	tpl, err := template.New(c.FileName()).Parse(componentYamlTpl)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse component file template: %w", err)
+	}
+
+	var componentConfig bytes.Buffer
+	if err := tpl.Execute(&componentConfig, c); err != nil {
+		return nil, fmt.Errorf("failed to render component template: %w", err)
+	}
+
+	return componentConfig.Bytes(), nil
 }
 
 func NewComponent(name string, t string, metadata map[string]string) Component {
