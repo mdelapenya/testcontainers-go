@@ -40,6 +40,14 @@ func ExampleRunContainer() {
 
 	fmt.Println(state.Running)
 
+	networks, err := daprContainer.Networks(ctx)
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println(networks[0])
+
 	// Output:
 	// true
+	// dapr-network
 }

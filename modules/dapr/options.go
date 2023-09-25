@@ -12,6 +12,7 @@ type options struct {
 	AppName        string
 	Components     map[string]Component
 	ComponentsPath string
+	NetworkName    string
 }
 
 func defaultOptions() options {
@@ -19,6 +20,7 @@ func defaultOptions() options {
 		AppName:        defaultDaprAppName,
 		Components:     map[string]Component{},
 		ComponentsPath: defaultComponentsPath,
+		NetworkName:    defaultDaprNetworkName,
 	}
 }
 
