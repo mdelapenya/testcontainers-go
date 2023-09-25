@@ -35,6 +35,7 @@ This entrypoint function will create:
 
 - a Dapr network in which the Dapr container and all its components will be attached. Default name is `dapr-network`.
 - a Dapr container.
+- A component container for each component that has a Docker image defined. See [Components](#components) for more information.
 
 ### Container Options
 
@@ -66,7 +67,11 @@ The `Component` struct has the following fields:
 <!--/codeinclude-->
 
 - The key used to internally identify a Component is the component name. E.g. `statestore`.
+- The image is the Docker image used by the component. E.g. `redis:6-alpine`.
 - Metadata it's a map of strings, where the key is the metadata name and the value is the metadata value. It will be used to render a YAML file with the component configuration.
+
+!!! info
+    Those components with a Docker image will be run as a separate container in the Dapr network, and using Dapr's container ID as the container network mode.
 
 Each component will result in a configuration file that will be uploaded to the Dapr container, under the `/components` directory. It's possible to change this file path with the `WithComponentsPath(path string)` functional option. If not passed, the default value is `/components`.
 

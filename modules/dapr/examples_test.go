@@ -18,9 +18,8 @@ func ExampleRunContainer() {
 		dapr.WithNetworkName("dapr-network"),
 		dapr.WithComponents(
 			dapr.NewComponent("pubsub", "pubsub.in-memory", map[string]string{"foo": "bar", "bar": "baz"}),
-			dapr.NewComponent("statestore", "statestore.in-memory", map[string]string{"baz": "qux", "quux": "quuz"}),
+			dapr.NewComponentWithImage("statestore", "state.redis", "redis:6-alpine", map[string]string{"baz": "qux", "quux": "quuz"}),
 		),
-		dapr.WithComponentsPath("/components"),
 	)
 	if err != nil {
 		panic(err)

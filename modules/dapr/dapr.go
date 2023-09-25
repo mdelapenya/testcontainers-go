@@ -8,7 +8,9 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/docker/docker/api/types/container"
 	"github.com/docker/go-connections/nat"
+
 	"github.com/testcontainers/testcontainers-go"
 )
 
@@ -33,8 +35,9 @@ var (
 // DaprContainer represents the Dapr container type used in the module
 type DaprContainer struct {
 	testcontainers.Container
-	Network  testcontainers.Network
-	Settings options
+	Network             testcontainers.Network
+	ComponentContainers map[string]testcontainers.Container
+	Settings            options
 }
 
 // GRPCPort returns the port used by the Dapr container
@@ -47,20 +50,35 @@ func (c *DaprContainer) GRPCPort(ctx context.Context) (int, error) {
 	return port.Int(), nil
 }
 
-// Terminate terminates the Dapr container and removes the Dapr network
+// Terminate terminates the Dapr container and removes the component containers and the Dapr network,
+// in that particular order.
 func (c *DaprContainer) Terminate(ctx context.Context) error {
 	if err := c.Container.Terminate(ctx); err != nil {
-		return err
+		return fmt.Errorf("failed to terminate Dapr container %w", err)
+	}
+
+	for key, componentContainer := range c.ComponentContainers {
+		// do not terminate the component container if it has no image defined
+		if c.Settings.Components[key].Image == "" {
+			continue
+		}
+
+		if err := componentContainer.Terminate(ctx); err != nil {
+			return fmt.Errorf("failed to terminate component container %w", err)
+		}
 	}
 
 	if err := c.Network.Remove(ctx); err != nil {
-		return err
+		return fmt.Errorf("failed to terminate Dapr network %w", err)
 	}
 
 	return nil
 }
 
-// RunContainer creates an instance of the Dapr container type
+// RunContainer creates an instance of the Dapr container type, creating the following elements:
+// - a Dapr network
+// - a Dapr container
+// - a component container for each component defined in the options. The component must have an image defined.
 func RunContainer(ctx context.Context, opts ...testcontainers.ContainerCustomizer) (*DaprContainer, error) {
 	componentsTmpDir = filepath.Join(os.TempDir(), fmt.Sprintf("%d", time.Now().UnixMilli()), "components")
 	err := os.MkdirAll(componentsTmpDir, 0o700)
@@ -96,7 +114,7 @@ func RunContainer(ctx context.Context, opts ...testcontainers.ContainerCustomize
 		return nil, err
 	}
 
-	genericContainerReq.Cmd = []string{"./daprd", "-app-id", settings.AppName, "--dapr-listen-addresses=0.0.0.0", "-components-path", settings.ComponentsPath}
+	genericContainerReq.Cmd = []string{"./daprd", "-app-id", settings.AppName, "--dapr-listen-addresses=0.0.0.0", "-components-path", defaultComponentsPath}
 
 	nw, err := testcontainers.GenericNetwork(ctx, testcontainers.GenericNetworkRequest{
 		NetworkRequest: testcontainers.NetworkRequest{
@@ -114,26 +132,62 @@ func RunContainer(ctx context.Context, opts ...testcontainers.ContainerCustomize
 		settings.NetworkName: {settings.AppName},
 	}
 
-	container, err := testcontainers.GenericContainer(ctx, genericContainerReq)
+	daprContainer, err := testcontainers.GenericContainer(ctx, genericContainerReq)
 	if err != nil {
 		return nil, err
 	}
 
+	// we must start the component containers in container mode, so that they can connect to the Dapr container
+	networkMode := fmt.Sprintf("container:%v", daprContainer.GetContainerID())
+
+	componentContainers := map[string]testcontainers.Container{}
+	for _, component := range settings.Components {
+		if component.Image == "" {
+			continue
+		}
+
+		componentContainer, err := testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{
+			ContainerRequest: testcontainers.ContainerRequest{
+				Image:    component.Image,
+				Networks: []string{settings.NetworkName},
+				NetworkAliases: map[string][]string{
+					settings.NetworkName: {component.Name},
+				},
+				HostConfigModifier: func(hc *container.HostConfig) {
+					hc.NetworkMode = container.NetworkMode(networkMode)
+				},
+			},
+			Started: true,
+		})
+		if err != nil {
+			return nil, err
+		}
+
+		componentContainers[component.Key()] = componentContainer
+	}
+
 	return &DaprContainer{
-		Container: container,
-		Settings:  settings,
-		Network:   nw,
+		Container:           daprContainer,
+		Settings:            settings,
+		ComponentContainers: componentContainers,
+		Network:             nw,
 	}, nil
 }
 
 // renderComponents renders the configuration file for each component, creating a temporary file for each one under a default
-// temporary directory. The entire directory is then uploaded to the container.
+// temporary directory. The entire directory is then uploaded to the container, including the
+// right permissions (0o777) for Dapr to access the files.
 func renderComponents(settings options, req *testcontainers.GenericContainerRequest) error {
+	execPermissions := os.FileMode(0o777)
+
 	for _, component := range settings.Components {
 		content, err := component.Render()
+		if err != nil {
+			return err
+		}
 
 		tmpComponentFile := filepath.Join(componentsTmpDir, component.FileName())
-		err = os.WriteFile(tmpComponentFile, content, 0o600)
+		err = os.WriteFile(tmpComponentFile, content, execPermissions)
 		if err != nil {
 			return err
 		}
@@ -142,8 +196,8 @@ func renderComponents(settings options, req *testcontainers.GenericContainerRequ
 
 	req.Files = append(req.Files, testcontainers.ContainerFile{
 		HostFilePath:      componentsTmpDir,
-		ContainerFilePath: settings.ComponentsPath,
-		FileMode:          0o600,
+		ContainerFilePath: defaultComponentsPath,
+		FileMode:          int64(execPermissions),
 	})
 
 	return nil
