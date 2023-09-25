@@ -97,7 +97,7 @@ func RunContainer(ctx context.Context, opts ...testcontainers.ContainerCustomize
 // temporary directory. The entire directory is then uploaded to the container.
 func renderComponents(settings options, req *testcontainers.GenericContainerRequest) error {
 	for _, component := range settings.Components {
-		name := "component-" + component.Name + ".yaml"
+		name := component.Name + ".yaml"
 		tpl, err := template.New(name).Parse(componentYamlTpl)
 		if err != nil {
 			return fmt.Errorf("failed to parse component file template: %w", err)

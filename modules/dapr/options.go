@@ -45,8 +45,9 @@ type Component struct {
 
 // }
 
+// Key returns the component name, which must be unique.
 func (c Component) Key() string {
-	return c.Name + ":" + c.Type
+	return c.Name
 }
 
 func NewComponent(name string, t string, metadata map[string]string) Component {

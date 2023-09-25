@@ -56,7 +56,7 @@ The `Component` struct has the following fields:
 [Dapr Component](../../modules/dapr/options.go) inside_block:componentStruct
 <!--/codeinclude-->
 
-- The key used to internally identify a Component is a string formed by the component name and the component type, separated by a colon. E.g. `my-pubsub:pubsub`.
+- The key used to internally identify a Component is the component name. E.g. `statestore`.
 - Metadata it's a map of strings, where the key is the metadata name and the value is the metadata value. It will be used to render a YAML file with the component configuration.
 
 Each component will result in a configuration file that will be uploaded to the Dapr container, under the `/components` directory. It's possible to change this file path with the `WithComponentsPath(path string)` functional option. If not passed, the default value is `/components`.
