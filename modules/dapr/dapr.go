@@ -83,8 +83,6 @@ func RunContainer(ctx context.Context, opts ...testcontainers.ContainerCustomize
 		Started:          true,
 	}
 
-	opts = append(opts, WithComponents(NewComponent("statestore", "state.in-memory", map[string]string{})))
-
 	settings := defaultOptions()
 	for _, opt := range opts {
 		if apply, ok := opt.(Option); ok {

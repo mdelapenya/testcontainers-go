@@ -15,10 +15,15 @@ type options struct {
 	NetworkName    string
 }
 
+// defaultOptions returns the default options for the Dapr container, including an in-memory state store.
 func defaultOptions() options {
+	inMemoryStore := NewComponent("statestore", "state.in-memory", map[string]string{})
+
 	return options{
-		AppName:        defaultDaprAppName,
-		Components:     map[string]Component{},
+		AppName: defaultDaprAppName,
+		Components: map[string]Component{
+			inMemoryStore.Key(): inMemoryStore,
+		},
 		ComponentsPath: defaultComponentsPath,
 		NetworkName:    defaultDaprNetworkName,
 	}
