@@ -67,6 +67,7 @@ nav:
         - modules/cassandra.md
         - modules/clickhouse.md
         - modules/couchbase.md
+        - modules/dapr.md
         - modules/elasticsearch.md
         - modules/gcloud.md
         - modules/k3s.md
