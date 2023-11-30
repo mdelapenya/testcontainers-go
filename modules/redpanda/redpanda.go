@@ -71,6 +71,8 @@ func RunContainer(ctx context.Context, opts ...testcontainers.ContainerCustomize
 				"redpanda",
 				"start",
 				"--mode=dev-container",
+				"--smp=1",
+				"--memory=1G",
 			},
 		},
 		Started: true,
@@ -174,9 +176,11 @@ func RunContainer(ctx context.Context, opts ...testcontainers.ContainerCustomize
 	}
 
 	// 6. Wait until Redpanda is ready to serve requests
-	err = wait.ForLog("Successfully started Redpanda!").
-		WithPollInterval(100*time.Millisecond).
+	err = wait.ForAll(
+		wait.ForListeningPort(defaultKafkaAPIPort),
+		wait.ForLog("Successfully started Redpanda!").WithPollInterval(100*time.Millisecond)).
 		WaitUntilReady(ctx, container)
+
 	if err != nil {
 		return nil, fmt.Errorf("failed to wait for Redpanda readiness: %w", err)
 	}

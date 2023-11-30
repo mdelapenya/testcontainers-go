@@ -30,14 +30,14 @@ func TestGetDockerConfig(t *testing.T) {
 	// Then, we can safely run the tests that rely on it.
 	defaultCfg, err := dockercfg.LoadDefaultConfig()
 	require.Nil(t, err)
-	require.NotNil(t, defaultCfg)
+	require.NotEmpty(t, defaultCfg)
 
 	t.Run("without DOCKER_CONFIG env var retrieves default", func(t *testing.T) {
 		t.Setenv("DOCKER_CONFIG", "")
 
 		cfg, err := getDockerConfig()
 		require.Nil(t, err)
-		require.NotNil(t, cfg)
+		require.NotEmpty(t, cfg)
 
 		assert.Equal(t, defaultCfg, cfg)
 	})
@@ -55,7 +55,7 @@ func TestGetDockerConfig(t *testing.T) {
 
 		cfg, err := getDockerConfig()
 		require.Nil(t, err)
-		require.NotNil(t, cfg)
+		require.NotEmpty(t, cfg)
 
 		assert.Equal(t, 3, len(cfg.AuthConfigs))
 
@@ -83,7 +83,7 @@ func TestGetDockerConfig(t *testing.T) {
 
 		cfg, err := getDockerConfig()
 		require.Nil(t, err)
-		require.NotNil(t, cfg)
+		require.NotEmpty(t, cfg)
 
 		assert.Equal(t, 1, len(cfg.AuthConfigs))
 
@@ -109,12 +109,54 @@ func TestGetDockerConfig(t *testing.T) {
 
 		registry, cfg, err := DockerImageAuth(context.Background(), exampleAuth+"/my/image:latest")
 		require.Nil(t, err)
-		require.NotNil(t, cfg)
+		require.NotEmpty(t, cfg)
 
 		assert.Equal(t, exampleAuth, registry)
 		assert.Equal(t, "gopher", cfg.Username)
 		assert.Equal(t, "secret", cfg.Password)
 		assert.Equal(t, base64, cfg.Auth)
+	})
+
+	t.Run("match registry authentication by host", func(t *testing.T) {
+		base64 := "Z29waGVyOnNlY3JldA==" // gopher:secret
+		imageReg := "example-auth.com"
+		imagePath := "/my/image:latest"
+
+		t.Setenv("DOCKER_AUTH_CONFIG", `{
+			"auths": {
+					"`+exampleAuth+`": { "username": "gopher", "password": "secret", "auth": "`+base64+`" }
+			},
+			"credsStore": "desktop"
+		}`)
+
+		registry, cfg, err := DockerImageAuth(context.Background(), imageReg+imagePath)
+		require.Nil(t, err)
+		require.NotEmpty(t, cfg)
+
+		assert.Equal(t, imageReg, registry)
+		assert.Equal(t, "gopher", cfg.Username)
+		assert.Equal(t, "secret", cfg.Password)
+		assert.Equal(t, base64, cfg.Auth)
+	})
+
+	t.Run("fail to match registry authentication due to invalid host", func(t *testing.T) {
+		base64 := "Z29waGVyOnNlY3JldA==" // gopher:secret
+		imageReg := "example-auth.com"
+		imagePath := "/my/image:latest"
+		invalidRegistryURL := "://invalid-host"
+
+		t.Setenv("DOCKER_AUTH_CONFIG", `{
+			"auths": {
+					"`+invalidRegistryURL+`": { "username": "gopher", "password": "secret", "auth": "`+base64+`" }
+			},
+			"credsStore": "desktop"
+		}`)
+
+		registry, cfg, err := DockerImageAuth(context.Background(), imageReg+imagePath)
+		require.Equal(t, err, dockercfg.ErrCredentialsNotFound)
+		require.Empty(t, cfg)
+
+		assert.Equal(t, imageReg, registry)
 	})
 }
 
@@ -158,7 +200,7 @@ func TestBuildContainerFromDockerfileWithDockerAuthConfig(t *testing.T) {
 	base64 := "dGVzdHVzZXI6dGVzdHBhc3N3b3Jk" // testuser:testpassword
 	t.Setenv("DOCKER_AUTH_CONFIG", `{
 		"auths": {
-				"localhost:5000": { "username": "testuser", "password": "testpassword", "auth": "`+base64+`" }
+				"localhost:5001": { "username": "testuser", "password": "testpassword", "auth": "`+base64+`" }
 		},
 		"credsStore": "desktop"
 	}`)
@@ -187,7 +229,7 @@ func TestBuildContainerFromDockerfileShouldFailWithWrongDockerAuthConfig(t *test
 	base64 := "Zm9vOmJhcg==" // foo:bar
 	t.Setenv("DOCKER_AUTH_CONFIG", `{
 		"auths": {
-			"localhost:5000": { "username": "foo", "password": "bar", "auth": "`+base64+`" }
+			"localhost:5001": { "username": "foo", "password": "bar", "auth": "`+base64+`" }
 		},
 		"credsStore": "desktop"
 	}`)
@@ -216,7 +258,7 @@ func TestCreateContainerFromPrivateRegistry(t *testing.T) {
 	base64 := "dGVzdHVzZXI6dGVzdHBhc3N3b3Jk" // testuser:testpassword
 	t.Setenv("DOCKER_AUTH_CONFIG", `{
 		"auths": {
-				"localhost:5000": { "username": "testuser", "password": "testpassword", "auth": "`+base64+`" }
+				"localhost:5001": { "username": "testuser", "password": "testpassword", "auth": "`+base64+`" }
 		},
 		"credsStore": "desktop"
 	}`)
@@ -225,7 +267,7 @@ func TestCreateContainerFromPrivateRegistry(t *testing.T) {
 
 	ctx := context.Background()
 	req := ContainerRequest{
-		Image:           "localhost:5000/redis:5.0-alpine",
+		Image:           "localhost:5001/redis:5.0-alpine",
 		AlwaysPullImage: true, // make sure the authentication takes place
 		ExposedPorts:    []string{"6379/tcp"},
 		WaitingFor:      wait.ForLog("Ready to accept connections"),
@@ -243,28 +285,24 @@ func prepareLocalRegistryWithAuth(t *testing.T) {
 	ctx := context.Background()
 	wd, err := os.Getwd()
 	assert.NoError(t, err)
-	// bindMounts {
+	// copyDirectoryToContainer {
 	req := ContainerRequest{
 		Image:        "registry:2",
-		ExposedPorts: []string{"5000:5000/tcp"},
+		ExposedPorts: []string{"5001:5000/tcp"},
 		Env: map[string]string{
 			"REGISTRY_AUTH":                             "htpasswd",
 			"REGISTRY_AUTH_HTPASSWD_REALM":              "Registry",
 			"REGISTRY_AUTH_HTPASSWD_PATH":               "/auth/htpasswd",
 			"REGISTRY_STORAGE_FILESYSTEM_ROOTDIRECTORY": "/data",
 		},
-		Mounts: ContainerMounts{
-			ContainerMount{
-				Source: GenericBindMountSource{
-					HostPath: fmt.Sprintf("%s/testdata/auth", wd),
-				},
-				Target: "/auth",
+		Files: []ContainerFile{
+			{
+				HostFilePath:      fmt.Sprintf("%s/testdata/auth", wd),
+				ContainerFilePath: "/auth",
 			},
-			ContainerMount{
-				Source: GenericBindMountSource{
-					HostPath: fmt.Sprintf("%s/testdata/data", wd),
-				},
-				Target: "/data",
+			{
+				HostFilePath:      fmt.Sprintf("%s/testdata/data", wd),
+				ContainerFilePath: "/data",
 			},
 		},
 		WaitingFor: wait.ForExposedPort(),
@@ -281,7 +319,7 @@ func prepareLocalRegistryWithAuth(t *testing.T) {
 	assert.NoError(t, err)
 
 	t.Cleanup(func() {
-		removeImageFromLocalCache(t, "localhost:5000/redis:5.0-alpine")
+		removeImageFromLocalCache(t, "localhost:5001/redis:5.0-alpine")
 	})
 	t.Cleanup(func() {
 		assert.NoError(t, registryC.Terminate(context.Background()))

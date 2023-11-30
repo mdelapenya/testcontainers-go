@@ -47,7 +47,15 @@ func ExampleHTTPStrategy() {
 		}
 	}()
 
-	// Here you have a running container
+	state, err := gogs.State(ctx)
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println(state.Running)
+
+	// Output:
+	// true
 }
 
 func ExampleHTTPStrategy_WithPort() {
@@ -74,7 +82,15 @@ func ExampleHTTPStrategy_WithPort() {
 		}
 	}()
 
-	// Here you have a running container
+	state, err := gogs.State(ctx)
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println(state.Running)
+
+	// Output:
+	// true
 }
 
 func ExampleHTTPStrategy_WithBasicAuth() {
@@ -101,7 +117,15 @@ func ExampleHTTPStrategy_WithBasicAuth() {
 		}
 	}()
 
-	// Here you have a running container
+	state, err := gogs.State(ctx)
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println(state.Running)
+
+	// Output:
+	// true
 }
 
 func TestHTTPStrategyWaitUntilReady(t *testing.T) {
@@ -562,7 +586,8 @@ func TestHttpStrategyFailsWhileGettingPortDueToNoExposedPorts(t *testing.T) {
 		},
 		StateImpl: func(_ context.Context) (*types.ContainerState, error) {
 			return &types.ContainerState{
-				Status: "running",
+				Status:  "running",
+				Running: true,
 			}, nil
 		},
 		PortsImpl: func(ctx context.Context) (nat.PortMap, error) {
@@ -602,7 +627,8 @@ func TestHttpStrategyFailsWhileGettingPortDueToOnlyUDPPorts(t *testing.T) {
 		},
 		StateImpl: func(_ context.Context) (*types.ContainerState, error) {
 			return &types.ContainerState{
-				Status: "running",
+				Running: true,
+				Status:  "running",
 			}, nil
 		},
 		PortsImpl: func(ctx context.Context) (nat.PortMap, error) {
@@ -649,7 +675,8 @@ func TestHttpStrategyFailsWhileGettingPortDueToExposedPortNoBindings(t *testing.
 		},
 		StateImpl: func(_ context.Context) (*types.ContainerState, error) {
 			return &types.ContainerState{
-				Status: "running",
+				Running: true,
+				Status:  "running",
 			}, nil
 		},
 		PortsImpl: func(ctx context.Context) (nat.PortMap, error) {

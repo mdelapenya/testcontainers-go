@@ -130,7 +130,7 @@ func (ws *HTTPStrategy) Timeout() *time.Duration {
 }
 
 // WaitUntilReady implements Strategy.WaitUntilReady
-func (ws *HTTPStrategy) WaitUntilReady(ctx context.Context, target StrategyTarget) (err error) {
+func (ws *HTTPStrategy) WaitUntilReady(ctx context.Context, target StrategyTarget) error {
 	timeout := defaultStartupTimeout()
 	if ws.timeout != nil {
 		timeout = *ws.timeout
@@ -141,13 +141,15 @@ func (ws *HTTPStrategy) WaitUntilReady(ctx context.Context, target StrategyTarge
 
 	ipAddress, err := target.Host(ctx)
 	if err != nil {
-		return
+		return err
 	}
 
 	var mappedPort nat.Port
 	if ws.Port == "" {
-		ports, err := target.Ports(ctx)
-		for err != nil {
+		var err error
+		var ports nat.PortMap
+		// we wait one polling interval before we grab the ports otherwise they might not be bound yet on startup
+		for err != nil || ports == nil {
 			select {
 			case <-ctx.Done():
 				return fmt.Errorf("%w: %w", ctx.Err(), err)
@@ -250,7 +252,7 @@ func (ws *HTTPStrategy) WaitUntilReady(ctx context.Context, target StrategyTarge
 	if ws.Body != nil {
 		body, err = io.ReadAll(ws.Body)
 		if err != nil {
-			return
+			return err
 		}
 	}
 
