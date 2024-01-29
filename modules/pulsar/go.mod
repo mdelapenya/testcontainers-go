@@ -3,7 +3,7 @@ module github.com/testcontainers/testcontainers-go/modules/pulsar
 go 1.20
 
 require (
-	github.com/apache/pulsar-client-go v0.10.0
+	github.com/apache/pulsar-client-go v0.12.0
 	github.com/docker/docker v25.0.1+incompatible
 	github.com/docker/go-connections v0.5.0
 	github.com/stretchr/testify v1.8.4
@@ -45,6 +45,8 @@ require (
 	github.com/golang/snappy v0.0.1 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/gsterjov/go-libsecret v0.0.0-20161001094733-a6f4afe4910c // indirect
+	github.com/hashicorp/errwrap v1.1.0 // indirect
+	github.com/hashicorp/go-multierror v1.1.1 // indirect
 	github.com/klauspost/compress v1.16.0 // indirect
 	github.com/kr/text v0.2.0 // indirect
 	github.com/linkedin/goavro/v2 v2.9.8 // indirect
