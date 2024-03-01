@@ -6,7 +6,7 @@ require (
 	github.com/elastic/go-elasticsearch/v8 v8.11.1
 	github.com/stretchr/testify v1.8.4
 	github.com/testcontainers/testcontainers-go v0.28.0
-	golang.org/x/mod v0.14.0
+	golang.org/x/mod v0.15.0
 )
 
 require (
