@@ -102,3 +102,19 @@ This field holds a function that has access to Docker's ImageBuildOptions type, 
 [Building From a Dockerfile including build options modifier](../../from_dockerfile_test.go) inside_block:buildFromDockerfileWithModifier
 [Dockerfile including target](../../testdata/target.Dockerfile)
 <!--/codeinclude-->
+
+### Building images with BuildKit
+
+_Testcontainers for Go_ supports building images with BuildKit. To enable BuildKit, the library offers a Go module with a specific `BuildOptionsModifier` for `BuildKit`. So you just need to import the module:
+
+```
+go get github.com/testcontainers/testcontainers-go/modules/buildkit
+```
+
+which will add the Docker BuildKit dependencies to your project, and use the modifier `buildkit.BuildKitOptionsModifier` in the `FromDockerfile` struct.
+
+To know more about BuildKit, please refer to the [official documentation](https://docs.docker.com/build/buildkit/).
+
+<!--codeinclude-->
+[Building with BuildKit](../../modules/buildkit/examples_test.go) inside_block:buildFromDockerfileWithBuildKit
+<!--/codeinclude-->
