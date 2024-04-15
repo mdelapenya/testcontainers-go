@@ -18,6 +18,10 @@
             "path": "../modules/artemis"
         },
         {
+            "name": "module / buildkit",
+            "path": "../modules/buildkit"
+        },
+        {
             "name": "module / cassandra",
             "path": "../modules/cassandra"
         },
