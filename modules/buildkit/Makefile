@@ -2,4 +2,4 @@ include ../../commons-test.mk
 
 .PHONY: test
 test:
-	$(MAKE) test-compose
+	$(MAKE) test-buildkit
