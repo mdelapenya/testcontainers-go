@@ -13,10 +13,10 @@ import (
 
 const minBuildKitApiVersion = "1.39"
 
-// BuildKitOptionsModifier is a function that modifies the build options to use buildkit.
-// It checks if the docker client supports buildkit and if it does, it creates a new build session.
+// BuildKitOptionsModifier is a function that modifies the build options to use BuildKit.
+// It checks if the docker client supports BuildKit and if it does, it creates a new build session.
 // You can use this function as a BuildOptionsModifier in the ContainerRequest.FromDockerfile
-// to build images using buildkit.
+// to build images using BuildKit.
 func BuildKitOptionsModifier(buildOptions *types.ImageBuildOptions) {
 	ctx := context.Background()
 

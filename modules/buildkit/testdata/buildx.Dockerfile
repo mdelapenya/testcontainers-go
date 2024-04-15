@@ -1,4 +1,4 @@
-# This file won't be build without buildkit support enabled
+# This file won't be build without BuildKit support enabled
 FROM alpine as base
 
 ARG FILENAME

@@ -22,6 +22,7 @@ func TestGenericContainerFromDockerfileBuildkit(t *testing.T) {
 
 	expectedTag := "test-repo:test-tag"
 
+	// buildFromDockerfileWithBuildKit {
 	c, err := testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{
 		ContainerRequest: testcontainers.ContainerRequest{
 			FromDockerfile: testcontainers.FromDockerfile{
@@ -38,6 +39,7 @@ func TestGenericContainerFromDockerfileBuildkit(t *testing.T) {
 		},
 		Started: false, // do not start the container
 	})
+	// }
 	if err != nil {
 		t.Fatal(err)
 	}
