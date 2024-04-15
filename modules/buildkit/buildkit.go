@@ -29,26 +29,30 @@ func BuildKitOptionsModifier(buildOptions *types.ImageBuildOptions) {
 
 	clientApiVersion := cli.ClientVersion()
 
-	if versions.GreaterThanOrEqualTo(clientApiVersion, minBuildKitApiVersion) {
-		s, err := session.NewSession(ctx, "testcontainers", "")
-		if err == nil {
-			testcontainers.Logger.Printf("🛠️ Building using BuildKit")
-
-			dialSession := func(ctx context.Context, proto string, meta map[string][]string) (net.Conn, error) {
-				return cli.DialHijack(ctx, "/session", proto, meta)
-			}
-
-			go func() {
-				if err := s.Run(ctx, dialSession); err != nil {
-					testcontainers.Logger.Printf("🛠️ Failed to run the build session: %s", err)
-				}
-			}()
-			defer s.Close()
-
-			buildOptions.SessionID = s.ID()
-			buildOptions.Version = types.BuilderBuildKit
-		} else {
-			testcontainers.Logger.Printf("🛠️ Could not create a build session, building without buildkit: %s", err)
-		}
+	if !versions.GreaterThanOrEqualTo(clientApiVersion, minBuildKitApiVersion) {
+		testcontainers.Logger.Printf("🛠️ BuildKit is not supported by the docker client")
+		return
 	}
+
+	s, err := session.NewSession(ctx, "testcontainers", "")
+	if err != nil {
+		testcontainers.Logger.Printf("🛠️ Could not create a build session, building without buildkit: %s", err)
+		return
+	}
+
+	testcontainers.Logger.Printf("🛠️ Building using BuildKit")
+
+	dialSession := func(ctx context.Context, proto string, meta map[string][]string) (net.Conn, error) {
+		return cli.DialHijack(ctx, "/session", proto, meta)
+	}
+
+	go func() {
+		if err := s.Run(ctx, dialSession); err != nil {
+			testcontainers.Logger.Printf("🛠️ Failed to run the build session: %s", err)
+		}
+	}()
+	defer s.Close()
+
+	buildOptions.SessionID = s.ID()
+	buildOptions.Version = types.BuilderBuildKit
 }
