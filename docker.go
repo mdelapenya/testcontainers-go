@@ -901,7 +901,7 @@ func (p *DockerProvider) BuildImage(ctx context.Context, img ImageBuildInfo) (st
 			buildOptions.SessionID = s.ID()
 			buildOptions.Version = types.BuilderBuildKit
 		} else {
-			Logger.Printf("Couldnot create a build session, building witout buildkit: %s", err)
+			Logger.Printf("Could not create a build session, building without buildkit: %s", err)
 		}
 	}
 
