@@ -102,10 +102,21 @@ func RunContainer(ctx context.Context, opts ...testcontainers.ContainerCustomize
 		Started:          true,
 	}
 
+	// 1. Gather all config options (defaults and then apply provided options)
+	settings := defaultOptions()
 	for _, opt := range opts {
+		if apply, ok := opt.(Option); ok {
+			apply(&settings)
+		}
 		if err := opt.Customize(&genericContainerReq); err != nil {
 			return nil, err
 		}
+	}
+
+	// 2. Register extra kafka listeners if provided, network aliases will be
+	// set
+	if err := registerListeners(settings, &genericContainerReq); err != nil {
+		return nil, fmt.Errorf("failed to register listeners: %w", err)
 	}
 
 	err := validateKRaftVersion(genericContainerReq.Image)
