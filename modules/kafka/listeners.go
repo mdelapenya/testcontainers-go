@@ -54,17 +54,33 @@ func registerListeners(settings options, req *testcontainers.GenericContainerReq
 		return fmt.Errorf("container must have network aliases defined")
 	}
 
-	advertisedListeners := req.Env["KAFKA_ADVERTISED_LISTENERS"]
+	listenersEnv := req.Env["KAFKA_LISTENERS"]
+	advertisedListenersEnv := req.Env["KAFKA_ADVERTISED_LISTENERS"]
+	listenersProtocolMapEnv := req.Env["KAFKA_LISTENER_SECURITY_PROTOCOL_MAP"]
 
 	for _, listener := range settings.Listeners {
 		if err := listener.Parse(); err != nil {
 			return err
 		}
 
-		if advertisedListeners == "" {
-			advertisedListeners = listener.String()
+		lStr := listener.String()
+
+		if listenersEnv == "" {
+			listenersEnv = lStr
 		} else {
-			advertisedListeners += "," + listener.String()
+			listenersEnv += "," + lStr
+		}
+
+		if advertisedListenersEnv == "" {
+			advertisedListenersEnv = lStr
+		} else {
+			advertisedListenersEnv += "," + lStr
+		}
+
+		if listenersProtocolMapEnv == "" {
+			listenersProtocolMapEnv = listener.Name + ":PLAINTEXT"
+		} else {
+			listenersProtocolMapEnv += "," + listener.Name + ":PLAINTEXT"
 		}
 
 		for _, network := range req.Networks {
@@ -72,7 +88,18 @@ func registerListeners(settings options, req *testcontainers.GenericContainerReq
 		}
 	}
 
-	req.Env["KAFKA_ADVERTISED_LISTENERS"] = advertisedListeners
+	req.Env["KAFKA_LISTENERS"] = listenersEnv
+	req.Env["KAFKA_ADVERTISED_LISTENERS"] = advertisedListenersEnv
+	req.Env["KAFKA_LISTENER_SECURITY_PROTOCOL_MAP"] = listenersProtocolMapEnv
+
+	if len(settings.TopicCreationHooks) > 0 {
+		// in the case topics needs to be created, we need to ensure that the topics are created after the container starts
+		kafkaLifecycle := testcontainers.ContainerLifecycleHooks{
+			PostReadies: settings.TopicCreationHooks,
+		}
+
+		req.LifecycleHooks = append(req.LifecycleHooks, kafkaLifecycle)
+	}
 
 	return nil
 }
