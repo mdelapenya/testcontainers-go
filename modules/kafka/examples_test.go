@@ -56,10 +56,11 @@ func ExampleRunContainer_withListeners() {
 	}
 
 	const (
-		kafkaTopic     string = "msgs"
-		kcatMessage    string = "Message produced by kcat"
-		kcatMsgsFile   string = "/tmp/msgs.txt"
-		kafkaAliasName string = "kafka0"
+		kafkaTopic        string = "msgs"
+		kcatMessage       string = "Message produced by kcat"
+		kcatMsgsFile      string = "/tmp/msgs.txt"
+		kafkaAliasName    string = "kafka0"
+		kafkaListenerPort int    = 29092
 	)
 
 	// 2. Start kafka container with listeners
@@ -68,7 +69,7 @@ func ExampleRunContainer_withListeners() {
 		testcontainers.WithImage("confluentinc/confluent-local:7.5.0"),
 		network.WithNetwork([]string{kafkaAliasName}, kafkaNw),
 		kafka.WithTopic(kafkaTopic),
-		kafka.WithListeners(kafka.NewListener("LISTENER_ALICE", kafkaAliasName, 29092)),
+		kafka.WithListeners(kafka.NewListener("LISTENER_ALICE", kafkaAliasName, kafkaListenerPort)),
 	)
 	if err != nil {
 		log.Fatalf("failed to start container: %s", err)
@@ -116,14 +117,16 @@ func ExampleRunContainer_withListeners() {
 		}
 	}()
 
+	bootstrapServer := fmt.Sprintf("%s:%d", kafkaAliasName, kafkaListenerPort)
+
 	// 4. Produce message to Kafka
-	_, _, err = kcat.Exec(ctx, []string{"kcat", "-b", kafkaAliasName + ":29092", "-t", kafkaTopic, "-P", "-l", kcatMsgsFile})
+	_, _, err = kcat.Exec(ctx, []string{"kcat", "-b", bootstrapServer, "-t", kafkaTopic, "-P", "-l", kcatMsgsFile})
 	if err != nil {
 		log.Fatalf("failed to produce message to Kafka: %s", err)
 	}
 
 	// 5. Consume message from Kafka
-	_, stdout, err := kcat.Exec(ctx, []string{"kcat", "-b", kafkaAliasName + ":29092", "-C", "-t", kafkaTopic, "-c", "1"}, tcexec.Multiplexed())
+	_, stdout, err := kcat.Exec(ctx, []string{"kcat", "-b", bootstrapServer, "-C", "-t", kafkaTopic, "-c", "1"}, tcexec.Multiplexed())
 	if err != nil {
 		log.Fatalf("failed to consume message from Kafka: %s", err)
 	}
