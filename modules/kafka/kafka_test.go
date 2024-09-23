@@ -120,28 +120,11 @@ func TestKafka_networkConnectivity(t *testing.T) {
 	// }
 	require.NoError(t, err, "failed to start kafka container")
 
-	kcat, err := testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{
-		ContainerRequest: testcontainers.ContainerRequest{
-			Image: "confluentinc/cp-kcat:7.4.1",
-			Networks: []string{
-				Network.Name,
-			},
-			Entrypoint: []string{
-				"sh",
-			},
-			Cmd: []string{
-				"-c",
-				"tail -f /dev/null",
-			},
-		},
-		Started: true,
-	})
-	// }
-
+	kcat, err := createKCat(ctx, Network.Name, "/tmp/msgs.txt")
 	require.NoError(t, err, "failed to start kcat")
 
 	// 4. Copy message to kcat
-	err = kcat.CopyToContainer(ctx, []byte("Message produced by kcat"), "/tmp/msgs.txt", 700)
+	err = kcat.CopyToContainer(ctx, []byte("Message produced by kcat"), kcat.FilePath, 700)
 	require.NoError(t, err)
 
 	brokers, err := KafkaContainer.Brokers(context.TODO())
@@ -233,34 +216,16 @@ func TestKafka_withListener(t *testing.T) {
 	require.NoError(t, err)
 
 	// 3. Start KCat container
-	// withListenerKcat {
-	kcat, err := testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{
-		ContainerRequest: testcontainers.ContainerRequest{
-			Image: "confluentinc/cp-kcat:7.4.1",
-			Networks: []string{
-				rpNetwork.Name,
-			},
-			Entrypoint: []string{
-				"sh",
-			},
-			Cmd: []string{
-				"-c",
-				"tail -f /dev/null",
-			},
-		},
-		Started: true,
-	})
-	// }
-
+	kcat, err := createKCat(ctx, rpNetwork.Name, "/tmp/msgs.txt")
 	require.NoError(t, err)
 
 	// 4. Copy message to kcat
-	err = kcat.CopyToContainer(ctx, []byte("Message produced by kcat"), "/tmp/msgs.txt", 700)
+	err = kcat.CopyToContainer(ctx, []byte("Message produced by kcat"), kcat.FilePath, 700)
 	require.NoError(t, err)
 
 	// 5. Produce message to Kafka
 	// withListenerExec {
-	_, _, err = kcat.Exec(ctx, []string{"kcat", "-b", "kafka:9092", "-t", "msgs", "-P", "-l", "/tmp/msgs.txt"})
+	_, _, err = kcat.Exec(ctx, []string{"kcat", "-b", "kafka:9092", "-t", "msgs", "-P", "-l", kcat.FilePath})
 	// }
 
 	require.NoError(t, err)

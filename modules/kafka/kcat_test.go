@@ -9,8 +9,8 @@ import (
 )
 
 type KcatContainer struct {
-	Container testcontainers.Container
-	FilePath  string
+	testcontainers.Container
+	FilePath string
 }
 
 func createKCat(ctx context.Context, network, filepath string) (KcatContainer, error) {
@@ -30,7 +30,6 @@ func createKCat(ctx context.Context, network, filepath string) (KcatContainer, e
 		},
 		Started: true,
 	})
-
 	if err != nil {
 		return KcatContainer{}, fmt.Errorf("create generic container: %w", err)
 	}
@@ -52,12 +51,14 @@ func (kcat *KcatContainer) ProduceMessageFromFile(ctx context.Context, broker, t
 func (kcat *KcatContainer) ConsumeMessage(ctx context.Context, broker, topic string) (string, error) {
 	cmd := []string{"kcat", "-b", broker, "-C", "-t", topic, "-c1"}
 	_, stdout, err := kcat.Container.Exec(ctx, cmd)
-	
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("exec: %w", err)
 	}
 
 	out, err := io.ReadAll(stdout)
+	if err != nil {
+		return "", fmt.Errorf("read all: %w", err)
+	}
 
-	return string(out), err
+	return string(out), nil
 }
