@@ -211,7 +211,7 @@ func TestTrimValidateListeners(t *testing.T) {
 			err := trimValidateListeners(test.listeners)
 
 			if test.wantErr != (err != nil) {
-				t.Fatalf(test.description)
+				t.Fatal(test.description)
 			}
 		})
 	}
