@@ -17,7 +17,7 @@ type FirebaseContainer struct {
 	testcontainers.Container
 }
 
-const defaultImageName = "ghcr.io/u-health/docker-firebase-emulator:13.6.0"
+const defaultImageName = "ghcr.io/u-health/docker-firebase-emulator:13.29.2"
 
 // WithRoot sets the directory which is copied to the destination container as firebase root
 func WithRoot(rootPath string) testcontainers.CustomizeRequestOption {
