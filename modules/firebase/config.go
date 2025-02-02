@@ -2,7 +2,7 @@ package firebase
 
 // Based on https://github.com/firebase/firebase-tools/blob/master/src/firebaseConfig.ts
 
-type EmulatorsConfig struct {
+type emulatorsConfig struct {
 	SingleProjectMode bool `json:"singleProjectMode,omitempty"`
 
 	Auth struct {
@@ -82,6 +82,6 @@ type EmulatorsConfig struct {
 		Port int    `json:"port,omitempty"`
 	} `json:"tasks,omitempty"`
 }
-type FirebaseConfig struct {
-	Emulators EmulatorsConfig `json:"emulators,omitempty"`
+type partialFirebaseConfig struct {
+	Emulators emulatorsConfig `json:"emulators,omitempty"`
 }

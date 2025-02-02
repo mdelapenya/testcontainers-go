@@ -67,7 +67,7 @@ func WithCache() testcontainers.CustomizeRequestOption {
 	}
 }
 
-func gatherPorts(config FirebaseConfig) ([]string, error) {
+func gatherPorts(config partialFirebaseConfig) ([]string, error) {
 	var ports []string
 
 	v := reflect.ValueOf(config.Emulators)
@@ -128,7 +128,7 @@ func Run(ctx context.Context, img string, opts ...testcontainers.ContainerCustom
 		return file.ContainerFilePath == rootFilePath
 	})
 	if rootPathIdx == -1 {
-		return nil, fmt.Errorf("firebase emulator is unable to boot without configuration root (obtained via 'firebase init')")
+		return nil, fmt.Errorf("firebase root not provided (WithRoot is required)")
 	}
 	// Parse expected emulators from the root:
 	userRoot := req.ContainerRequest.Files[rootPathIdx].HostFilePath
@@ -141,13 +141,13 @@ func Run(ctx context.Context, img string, opts ...testcontainers.ContainerCustom
 	if err != nil {
 		return nil, fmt.Errorf("read firebase.json: %w", err)
 	}
-	var parsed FirebaseConfig
+	var parsed partialFirebaseConfig
 	if err := json.Unmarshal(bytes, &parsed); err != nil {
 		return nil, fmt.Errorf("parse firebase.json: %w", err)
 	}
 	expectedExposedPorts, err := gatherPorts(parsed)
 	if err != nil {
-		return nil, fmt.Errorf("issues with emulator config block: %w", err)
+		return nil, fmt.Errorf("invalid config: %w", err)
 	}
 	req.ExposedPorts = expectedExposedPorts
 

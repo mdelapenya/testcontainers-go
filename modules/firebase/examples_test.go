@@ -26,7 +26,6 @@ func ExampleRun() {
 		log.Printf("failed to start container: %s", err)
 		return
 	}
-	// }
 
 	state, err := firebaseContainer.State(ctx)
 	if err != nil {
