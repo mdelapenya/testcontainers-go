@@ -94,11 +94,11 @@ func gatherPorts(config partialFirebaseConfig) ([]string, error) {
 			}
 		}
 		if portF != (reflect.Value{}) && !portF.IsZero() {
-			port := fmt.Sprintf("%d/tcp", portF.Int())
+			port := fmt.Sprintf("%d/tcp", portF.Uint())
 			ports = append(ports, port)
 		}
 		if websocketPortF != (reflect.Value{}) && !websocketPortF.IsZero() {
-			port := fmt.Sprintf("%d/tcp", websocketPortF.Int())
+			port := fmt.Sprintf("%d/tcp", websocketPortF.Uint())
 			ports = append(ports, port)
 		}
 	}
