@@ -6,7 +6,7 @@ toolchain go1.23.6
 
 require (
 	github.com/apache/pulsar-client-go v0.10.0
-	github.com/docker/docker v28.0.1+incompatible
+	github.com/docker/docker v28.0.2+incompatible
 	github.com/docker/go-connections v0.5.0
 	github.com/stretchr/testify v1.10.0
 	github.com/testcontainers/testcontainers-go v0.35.0
