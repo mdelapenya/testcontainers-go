@@ -2,10 +2,10 @@ module github.com/testcontainers/testcontainers-go/modules/ollama
 
 go 1.23.0
 
-toolchain go1.23.6
+toolchain go1.24.1
 
 require (
-	github.com/docker/docker v28.0.1+incompatible
+	github.com/docker/docker v28.0.4+incompatible
 	github.com/docker/go-connections v0.5.0
 	github.com/google/uuid v1.6.0
 	github.com/stretchr/testify v1.10.0
