@@ -2,10 +2,10 @@ module github.com/testcontainers/testcontainers-go/modules/etcd
 
 go 1.23.0
 
-toolchain go1.23.6
+toolchain go1.24.1
 
 require (
-	github.com/docker/docker v28.0.1+incompatible
+	github.com/docker/docker v28.0.4+incompatible
 	github.com/stretchr/testify v1.10.0
 	github.com/testcontainers/testcontainers-go v0.36.0
 	go.etcd.io/etcd/client/v3 v3.5.16
