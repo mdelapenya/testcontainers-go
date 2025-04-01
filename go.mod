@@ -2,14 +2,14 @@ module github.com/testcontainers/testcontainers-go
 
 go 1.23.0
 
-toolchain go1.23.6
+toolchain go1.24.1
 
 require (
 	dario.cat/mergo v1.0.1
 	github.com/cenkalti/backoff/v4 v4.2.1
 	github.com/containerd/platforms v0.2.1
 	github.com/cpuguy83/dockercfg v0.3.2
-	github.com/docker/docker v28.0.1+incompatible
+	github.com/docker/docker v28.0.4+incompatible
 	github.com/docker/go-connections v0.5.0
 	github.com/google/uuid v1.6.0
 	github.com/magiconair/properties v1.8.9
