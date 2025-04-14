@@ -18,7 +18,7 @@ func TestFirebase(t *testing.T) {
 	defer cancel()
 
 	ctr, err := firebase.Run(ctx, "ghcr.io/u-health/docker-firebase-emulator:13.29.2",
-		firebase.WithRoot(filepath.Join(".", "firebase")),
+		firebase.WithRoot(filepath.Join("testdata", "firebase")),
 	)
 	testcontainers.CleanupContainer(t, ctr)
 	require.NoError(t, err)
@@ -54,7 +54,7 @@ func TestFirebaseBadDirectory(t *testing.T) {
 	defer cancel()
 
 	ctr, err := firebase.Run(ctx, "ghcr.io/u-health/docker-firebase-emulator:13.29.2",
-		firebase.WithRoot(filepath.Join(".", "failure")),
+		firebase.WithRoot(filepath.Join("testdata", "failure")),
 	)
 	// In this case, the file gets copied over at /srv/failure (instead of /srv/firebase)
 	// and this stops working.
