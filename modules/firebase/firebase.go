@@ -88,6 +88,7 @@ func Run(ctx context.Context, img string, opts ...testcontainers.ContainerCustom
 	if rootPathIdx == -1 {
 		return nil, ErrRootNotProvided
 	}
+
 	// Parse expected emulators from the root:
 	userRoot := req.ContainerRequest.Files[rootPathIdx].HostFilePath
 	cfg, err := os.Open(path.Join(userRoot, "firebase.json"))
@@ -95,14 +96,17 @@ func Run(ctx context.Context, img string, opts ...testcontainers.ContainerCustom
 		return nil, fmt.Errorf("open firebase.json: %w", err)
 	}
 	defer cfg.Close()
+
 	bytes, err := io.ReadAll(cfg)
 	if err != nil {
 		return nil, fmt.Errorf("read firebase.json: %w", err)
 	}
+
 	var parsed partialFirebaseConfig
 	if err := json.Unmarshal(bytes, &parsed); err != nil {
 		return nil, fmt.Errorf("parse firebase.json: %w", err)
 	}
+
 	expectedExposedPorts, err := gatherPorts(parsed)
 	if err != nil {
 		return nil, fmt.Errorf("gather ports: %w", err)
