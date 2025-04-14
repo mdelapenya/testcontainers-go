@@ -1,8 +1,6 @@
 package firebase
 
 import (
-	"fmt"
-
 	"github.com/testcontainers/testcontainers-go"
 )
 
@@ -44,7 +42,7 @@ const cacheFilePath = "/root/.cache/firebase"
 
 // WithCache enables firebase binary cache based on session (meaningful only when multiple tests are used)
 func WithCache() testcontainers.CustomizeRequestOption {
-	volumeName := fmt.Sprintf("firestore-cache-%s", testcontainers.SessionID())
+	volumeName := "firestore-cache-" + testcontainers.SessionID()
 
 	return testcontainers.WithMounts(testcontainers.ContainerMount{
 		Source: testcontainers.DockerVolumeMountSource{
