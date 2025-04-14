@@ -29,15 +29,11 @@ var ErrRootNotProvided = errors.New("firebase root not provided (WithRoot is req
 
 // WithRoot sets the directory which is copied to the destination container as firebase root
 func WithRoot(rootPath string) testcontainers.CustomizeRequestOption {
-	return func(req *testcontainers.GenericContainerRequest) error {
-		req.Files = append(req.Files, testcontainers.ContainerFile{
-			HostFilePath:      rootPath,
-			ContainerFilePath: rootFilePath,
-			FileMode:          0o775,
-		})
-
-		return nil
-	}
+	return testcontainers.WithFiles(testcontainers.ContainerFile{
+		HostFilePath:      rootPath,
+		ContainerFilePath: rootFilePath,
+		FileMode:          0o775,
+	})
 }
 
 // WithData names the data directory (by default under firebase root), can be used as a way of setting up fixtures.
@@ -58,17 +54,13 @@ func WithCache() testcontainers.CustomizeRequestOption {
 		Labels: testcontainers.GenericLabels(),
 	}
 
-	return func(req *testcontainers.GenericContainerRequest) error {
-		m := testcontainers.ContainerMount{
-			Source: testcontainers.DockerVolumeMountSource{
-				Name:          volumeName,
-				VolumeOptions: volumeOptions,
-			},
-			Target: cacheFilePath,
-		}
-		req.Mounts = append(req.Mounts, m)
-		return nil
-	}
+	return testcontainers.WithMounts(testcontainers.ContainerMount{
+		Source: testcontainers.DockerVolumeMountSource{
+			Name:          volumeName,
+			VolumeOptions: volumeOptions,
+		},
+		Target: cacheFilePath,
+	})
 }
 
 func gatherPorts(config partialFirebaseConfig) ([]string, error) {
