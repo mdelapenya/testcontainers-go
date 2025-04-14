@@ -61,7 +61,7 @@ func TestFirebaseBadDirectory(t *testing.T) {
 	// What would be a solution here? Previously I just added an requireion that the root must
 	// end in "/firebase"... I could do the same.
 	testcontainers.CleanupContainer(t, ctr)
-	require.NoError(t, err)
+	require.Error(t, err)
 }
 
 func TestFirebaseRequiresRoot(t *testing.T) {
