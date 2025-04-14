@@ -3,6 +3,7 @@ package firebase
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -22,6 +23,9 @@ type Container struct {
 }
 
 const rootFilePath = "/srv/firebase"
+
+// ErrRootNotProvided is returned when the root path is not provided
+var ErrRootNotProvided = errors.New("firebase root not provided (WithRoot is required)")
 
 // WithRoot sets the directory which is copied to the destination container as firebase root
 func WithRoot(rootPath string) testcontainers.CustomizeRequestOption {
@@ -128,7 +132,7 @@ func Run(ctx context.Context, img string, opts ...testcontainers.ContainerCustom
 		return file.ContainerFilePath == rootFilePath
 	})
 	if rootPathIdx == -1 {
-		return nil, fmt.Errorf("firebase root not provided (WithRoot is required)")
+		return nil, ErrRootNotProvided
 	}
 	// Parse expected emulators from the root:
 	userRoot := req.ContainerRequest.Files[rootPathIdx].HostFilePath

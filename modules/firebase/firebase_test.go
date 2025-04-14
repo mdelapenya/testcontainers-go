@@ -70,5 +70,5 @@ func TestFirebaseRequiresRoot(t *testing.T) {
 
 	ctr, err := firebase.Run(ctx, "ghcr.io/u-health/docker-firebase-emulator:13.29.2")
 	testcontainers.CleanupContainer(t, ctr)
-	require.ErrorContains(t, err, "unable to boot without configuration root")
+	require.ErrorIs(t, err, firebase.ErrRootNotProvided)
 }
