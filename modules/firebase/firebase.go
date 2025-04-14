@@ -137,7 +137,7 @@ func Run(ctx context.Context, img string, opts ...testcontainers.ContainerCustom
 	}
 	expectedExposedPorts, err := gatherPorts(parsed)
 	if err != nil {
-		return nil, fmt.Errorf("invalid config: %w", err)
+		return nil, fmt.Errorf("gather ports: %w", err)
 	}
 	req.ExposedPorts = expectedExposedPorts
 
