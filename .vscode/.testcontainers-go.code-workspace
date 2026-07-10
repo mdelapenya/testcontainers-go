@@ -94,6 +94,10 @@
             "path": "../modules/etcd"
         },
         {
+            "name": "module / eventstoredb",
+            "path": "../modules/eventstoredb"
+        },
+        {
             "name": "module / forgejo",
             "path": "../modules/forgejo"
         },

@@ -36,6 +36,7 @@ updates:
         - /modules/dynamodb
         - /modules/elasticsearch
         - /modules/etcd
+        - /modules/eventstoredb
         - /modules/forgejo
         - /modules/gcloud
         - /modules/grafana-lgtm
