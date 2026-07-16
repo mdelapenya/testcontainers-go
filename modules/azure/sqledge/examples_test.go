@@ -15,6 +15,7 @@ func ExampleRun() {
 
 	sqlEdgeContainer, err := sqledge.Run(ctx,
 		"mcr.microsoft.com/azure-sql-edge:1.0.7",
+		sqledge.WithAcceptEULA(),
 		sqledge.WithPassword("Strong!Passw0rd"),
 	)
 	defer func() {

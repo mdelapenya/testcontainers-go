@@ -557,9 +557,18 @@ Azure SQL Edge is an ARM64-compatible SQL Server variant for IoT and edge scenar
 Use the second argument in the `Run` function to set a valid Docker image.
 In example: `Run(context.Background(), "mcr.microsoft.com/azure-sql-edge:1.0.7")`.
 
+!!! warning "EULA Acceptance"
+    Due to licensing restrictions you are required to explicitly accept an End User License Agreement (EULA) for the Azure SQL Edge container image. This is facilitated through the `WithAcceptEULA` option. `Run` returns an error if it is not provided.
+
 ### Container Options
 
 When starting the Azure SQL Edge container, you can pass options in a variadic way to configure it.
+
+#### WithAcceptEULA
+
+- Not available until the next release <a href="https://github.com/testcontainers/testcontainers-go"><span class="tc-version">:material-tag: main</span></a>
+
+Accepts the Microsoft Azure SQL Edge End-User License Agreement. This option is **required**; `Run` returns an error if it is not provided.
 
 #### WithPassword
 

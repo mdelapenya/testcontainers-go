@@ -15,7 +15,10 @@ import (
 func TestAzureSQLEdge(t *testing.T) {
 	ctx := context.Background()
 
-	ctr, err := sqledge.Run(ctx, "mcr.microsoft.com/azure-sql-edge:1.0.7")
+	ctr, err := sqledge.Run(ctx,
+		"mcr.microsoft.com/azure-sql-edge:1.0.7",
+		sqledge.WithAcceptEULA(),
+	)
 	testcontainers.CleanupContainer(t, ctr)
 	require.NoError(t, err)
 
@@ -31,11 +34,21 @@ func TestAzureSQLEdge(t *testing.T) {
 	require.NoError(t, err)
 }
 
+func TestAzureSQLEdgeWithMissingEULA(t *testing.T) {
+	ctx := context.Background()
+
+	ctr, err := sqledge.Run(ctx, "mcr.microsoft.com/azure-sql-edge:1.0.7")
+	testcontainers.CleanupContainer(t, ctr)
+	require.Error(t, err)
+	require.ErrorContains(t, err, "EULA not accepted")
+}
+
 func TestAzureSQLEdgeWithCustomPassword(t *testing.T) {
 	ctx := context.Background()
 
 	ctr, err := sqledge.Run(ctx,
 		"mcr.microsoft.com/azure-sql-edge:1.0.7",
+		sqledge.WithAcceptEULA(),
 		sqledge.WithPassword("Strong@Passw0rd"),
 	)
 	testcontainers.CleanupContainer(t, ctr)
@@ -56,7 +69,10 @@ func TestAzureSQLEdgeWithCustomPassword(t *testing.T) {
 func TestAzureSQLEdgeWithConnectionStringParameters(t *testing.T) {
 	ctx := context.Background()
 
-	ctr, err := sqledge.Run(ctx, "mcr.microsoft.com/azure-sql-edge:1.0.7")
+	ctr, err := sqledge.Run(ctx,
+		"mcr.microsoft.com/azure-sql-edge:1.0.7",
+		sqledge.WithAcceptEULA(),
+	)
 	testcontainers.CleanupContainer(t, ctr)
 	require.NoError(t, err)
 

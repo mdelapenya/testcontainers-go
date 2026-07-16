@@ -2,6 +2,7 @@ package sqledge
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -22,6 +23,15 @@ type Container struct {
 	password string
 }
 
+// WithAcceptEULA sets the ACCEPT_EULA environment variable to "Y", indicating
+// acceptance of the Microsoft Azure SQL Edge End-User License Agreement.
+// This option is required; Run returns an error if it is not provided.
+func WithAcceptEULA() testcontainers.CustomizeRequestOption {
+	return testcontainers.WithEnv(map[string]string{
+		"ACCEPT_EULA": "Y",
+	})
+}
+
 // WithPassword sets the MSSQL_SA_PASSWORD environment variable to the provided password.
 // The password must meet SQL Server complexity requirements: uppercase + lowercase + number + special char.
 func WithPassword(password string) testcontainers.CustomizeRequestOption {
@@ -36,21 +46,31 @@ func WithPassword(password string) testcontainers.CustomizeRequestOption {
 	}
 }
 
-// Run creates an instance of the Azure SQL Edge container type
+// Run creates an instance of the Azure SQL Edge container type.
+// Callers must pass WithAcceptEULA() to accept the Microsoft license agreement.
 func Run(ctx context.Context, img string, opts ...testcontainers.ContainerCustomizer) (*Container, error) {
 	moduleOpts := make([]testcontainers.ContainerCustomizer, 0, 3+len(opts))
 	moduleOpts = append(moduleOpts,
 		testcontainers.WithExposedPorts(defaultPort),
 		testcontainers.WithEnv(map[string]string{
-			"ACCEPT_EULA":       "Y",
 			"MSSQL_SA_PASSWORD": defaultPassword,
 		}),
 		testcontainers.WithWaitStrategy(
 			wait.ForListeningPort(defaultPort).WithStartupTimeout(2*time.Minute),
+			wait.ForLog("Recovery is complete."),
 		),
 	)
 
 	moduleOpts = append(moduleOpts, opts...)
+
+	// Validate EULA acceptance after applying user options.
+	validateEULA := func(req *testcontainers.GenericContainerRequest) error {
+		if strings.ToUpper(req.Env["ACCEPT_EULA"]) != "Y" {
+			return errors.New("EULA not accepted: use WithAcceptEULA() to accept the Azure SQL Edge license agreement")
+		}
+		return nil
+	}
+	moduleOpts = append(moduleOpts, testcontainers.CustomizeRequestOption(validateEULA))
 
 	ctr, err := testcontainers.Run(ctx, img, moduleOpts...)
 	var c *Container
@@ -62,7 +82,7 @@ func Run(ctx context.Context, img string, opts ...testcontainers.ContainerCustom
 		return c, fmt.Errorf("run sqledge: %w", err)
 	}
 
-	// Retrieve the effective password from container environment
+	// Retrieve the effective password from container environment.
 	inspect, err := ctr.Inspect(ctx)
 	if err != nil {
 		return c, fmt.Errorf("inspect sqledge: %w", err)
